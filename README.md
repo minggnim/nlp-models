@@ -1,6 +1,6 @@
 # deep-learning-classification
 
-A repository for training deep learning based classification models
+A repository for training deep learning classification models
 
 ## Install from the source
 ```
