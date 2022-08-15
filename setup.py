@@ -5,7 +5,7 @@ setup(
     packages=find_packages(where='src.bert_classifier'),
     package_dir={'': 'src'},
     version='0.1.0',
-    description='Bert based classification model',
+    description='Bert based NLP classification models',
     author='ming_gao@outlook.com',
     license='MIT',
     install_requires=[

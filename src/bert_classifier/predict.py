@@ -1,6 +1,7 @@
 import torch
 from .bert import bert_encoder
 
+
 MAX_LEN = 512
 
 class Inference(object):
