@@ -1,9 +1,9 @@
 import numpy as np
 from sklearn.metrics import (
-    precision_score, 
-    recall_score, 
-    f1_score, 
-    accuracy_score, 
+    precision_score,
+    recall_score,
+    f1_score,
+    accuracy_score,
     confusion_matrix
 )
 
@@ -14,12 +14,12 @@ def transform_outputs(outputs, targets):
     # y = np.array(targets).argmax(axis=1)  # for multilabel
     return y, p
 
-    
+
 def accuracy_metrics(outputs, targets):
     y, p = transform_outputs(outputs, targets)
     return accuracy_score(y, p)
 
-    
+
 def classification_metrics(outputs, targets):
     y, p = transform_outputs(outputs, targets)
     return dict([

@@ -4,6 +4,7 @@ from .bert import bert_encoder
 
 MAX_LEN = 512
 
+
 class Inference(object):
     def __init__(self, tokenizer, model, labels, max_len=MAX_LEN):
         self.tokenizer = tokenizer

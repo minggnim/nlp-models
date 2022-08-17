@@ -1,4 +1,12 @@
+import time
 import torch
+import numpy as np
+from tqdm import tqdm
+from .io import save_checkpoint
+from .metrics import accuracy_metrics
+
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 def loss_fn_multiple_labels(outputs, targets):
@@ -9,7 +17,7 @@ def loss_fn(outputs, targets):
     return torch.nn.CrossEntropyLoss()(outputs, targets)
 
 
-def train(model, train_dataloader, test_dataloader):
+def train(model, optimizer, train_dataloader, test_dataloader, EPOCHS):
     for epoch in range(EPOCHS):
         model.train()
         print("")
@@ -28,11 +36,9 @@ def train(model, train_dataloader, test_dataloader):
 
             loss = loss_fn(output, label)
             total_train_loss += loss.item()
-            
-            total_train_accuracy += accuracy_metrics(
-                output.detach().to(device).numpy(), 
-                label.detach().to(device).numpy())
-            
+
+            total_train_accuracy += accuracy_metrics(output.detach().to(device).numpy(), label.detach().to(device).numpy())
+
             # if step % 5000 == 0:
             #     print(f'Epoch: {epoch}, Loss: {loss.item()}')
 
@@ -46,10 +52,9 @@ def train(model, train_dataloader, test_dataloader):
         val_outputs, val_targets, val_loss = validate(model, test_dataloader)
         avg_val_loss = np.array(val_loss).mean()
         avg_val_accuracy = accuracy_metrics(val_outputs, val_targets)
-        val_accuracy = accuracy_metrics(val_outputs, val_targets)
         print(f'Validation loss: {avg_val_loss} || Validation accuracy: {avg_val_accuracy} || Validation time: {time.time() - t0} seconds')
         save_checkpoint(model, optimizer, epoch, avg_train_loss, avg_train_accuracy, avg_val_loss, avg_val_accuracy)
-    
+
 
 def validate(model, test_dataloader):
     model.eval()

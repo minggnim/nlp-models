@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data import Dataset
 from .bert import bert_encoder
 
@@ -12,11 +13,9 @@ class CustomDataset(Dataset):
         self.tokenizer = tokenizer
         self.content = self.data[DATA_FIELD]
         self.label = self.data[LABEL_FIELD]
-        
 
     def __len__(self):
         return len(self.content)
-
 
     def __getitem__(self, index):
         content = str(self.content[index])
@@ -28,5 +27,5 @@ class CustomDataset(Dataset):
             'mask': mask,
             'type_ids': token_type_ids,
             'label': torch.tensor(self.label[index], dtype=torch.long),
-            # 'multi_label': torch.tensor(self.label[index], dtype=torch.float),
+            # 'multi_label': torch.tensor(self.label[index], dtype=torch.float)
         }
