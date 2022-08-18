@@ -9,7 +9,7 @@ from sklearn.metrics import (
 
 
 def transform_outputs(outputs, targets):
-    p = np.array(outputs).argmax(axis=1)
+    p = np.array(outputs).argmax(axis=-1)
     y = targets
     # y = np.array(targets).argmax(axis=1)  # for multilabel
     return y, p
