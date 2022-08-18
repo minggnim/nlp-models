@@ -1,8 +1,14 @@
+'''
+bert inheritance class and functions
+'''
 import torch
 from .io import get_pretrained_model
 
 
 class BertClass(torch.nn.Module):
+    '''
+    Custom class for bert classification model
+    '''
     def __init__(self, num_label, base_model=None):
         super().__init__()
         self.l1 = base_model if base_model else get_pretrained_model()
@@ -19,6 +25,9 @@ class BertClass(torch.nn.Module):
 
 
 def bert_encoder(content, tokenizer, max_len):
+    '''
+    encoder function with preset params
+    '''
     inputs = tokenizer.encode_plus(
         content,
         add_special_tokens=True,

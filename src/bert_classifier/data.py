@@ -1,3 +1,6 @@
+'''
+data modules
+'''
 import torch
 from torch.utils.data import Dataset
 from .bert import bert_encoder
@@ -7,12 +10,12 @@ class CustomDataset(Dataset):
     '''
     Class to construct torch Dataset from dataframe
     '''
-    def __init__(self, dataframe, DATA_FIELD, LABEL_FIELD, tokenizer, max_len):
+    def __init__(self, dataframe, data_field, label_field, tokenizer, max_len):
         self.max_len = max_len
         self.data = dataframe
         self.tokenizer = tokenizer
-        self.content = self.data[DATA_FIELD]
-        self.label = self.data[LABEL_FIELD]
+        self.content = self.data[data_field]
+        self.label = self.data[label_field]
 
     def __len__(self):
         return len(self.content)

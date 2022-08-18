@@ -1,3 +1,6 @@
+'''
+Performance metrics
+'''
 import numpy as np
 from sklearn.metrics import (
     precision_score,
@@ -9,24 +12,34 @@ from sklearn.metrics import (
 
 
 def transform_outputs(outputs, targets):
-    p = np.array(outputs).argmax(axis=-1)
-    y = targets
+    '''
+    transform outputs to suitable format for calculating performance metrics
+    '''
+    preds = np.array(outputs).argmax(axis=-1)
     # y = np.array(targets).argmax(axis=1)  # for multilabel
-    return y, p
+    return targets, preds
 
 
 def accuracy_metrics(outputs, targets):
-    y, p = transform_outputs(outputs, targets)
-    return accuracy_score(y, p)
+    '''
+    function to calculate accuracy
+    outputs: model outputs
+    targets: labels
+    '''
+    targets, preds = transform_outputs(outputs, targets)
+    return accuracy_score(targets, preds)
 
 
 def classification_metrics(outputs, targets):
-    y, p = transform_outputs(outputs, targets)
+    '''
+    collection of classification metrics
+    '''
+    targets, preds = transform_outputs(outputs, targets)
     return dict([
-        ('n', len(y)),
-        ('accuracy', accuracy_score(y, p)),
-        ('precision', precision_score(y, p, average='macro')),
-        ('recall', recall_score(y, p, average='macro')),
-        ('f1', f1_score(y, p, average='macro')),
-        ('confusion', confusion_matrix(y, p))
+        ('n', len(targets)),
+        ('accuracy', accuracy_score(targets, preds)),
+        ('precision', precision_score(targets, preds, average='macro')),
+        ('recall', recall_score(targets, preds, average='macro')),
+        ('f1', f1_score(targets, preds, average='macro')),
+        ('confusion', confusion_matrix(targets, preds))
     ])
