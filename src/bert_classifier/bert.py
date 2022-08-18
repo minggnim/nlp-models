@@ -1,10 +1,11 @@
 import torch
+from .io import get_pretrained_model
 
 
 class BertClass(torch.nn.Module):
-    def __init__(self, pretrained_model, num_label):
+    def __init__(self, num_label, base_model=None):
         super().__init__()
-        self.l1 = pretrained_model
+        self.l1 = base_model if base_model else get_pretrained_model()
         self.l2 = torch.nn.Dropout(self.l1.config.hidden_dropout_prob)
         self.l3 = torch.nn.Linear(self.l1.config.hidden_size, num_label)
 

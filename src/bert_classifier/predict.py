@@ -1,13 +1,14 @@
 import torch
 from .bert import bert_encoder
+from .io import get_pretrained_tokenizer
 
 
 MAX_LEN = 512
 
 
 class Inference(object):
-    def __init__(self, tokenizer, model, labels, max_len=MAX_LEN):
-        self.tokenizer = tokenizer
+    def __init__(self, model, labels, tokenizer=None, max_len=MAX_LEN):
+        self.tokenizer = tokenizer if tokenizer else get_pretrained_tokenizer()
         self.model = model
         self.labels = labels
         self.max_len = max_len

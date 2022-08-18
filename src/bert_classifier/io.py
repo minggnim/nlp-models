@@ -1,6 +1,6 @@
 import json
-import torch
 from pathlib import Path
+import torch
 from transformers import BertTokenizer, BertModel
 from .bert import BertClass
 
@@ -15,7 +15,7 @@ FINETUNED_OPT_STATE = MODEL_DIR / 'fine-tuned/opt-state-dict'
 CHECKPOINT_DIR = MODEL_DIR / 'checkpoint'
 
 
-def get_pretrained_tokenizer(PRETRAINED_TOKENIZER, MODEL_NAME):
+def get_pretrained_tokenizer(MODEL_NAME=MODEL_NAME, PRETRAINED_TOKENIZER=PRETRAINED_TOKENIZER):
     if PRETRAINED_TOKENIZER.exists():
         pretrained_tokenizer = BertTokenizer.from_pretrained(PRETRAINED_TOKENIZER)
     else:
@@ -24,7 +24,7 @@ def get_pretrained_tokenizer(PRETRAINED_TOKENIZER, MODEL_NAME):
     return pretrained_tokenizer
 
 
-def get_pretrained_model(PRETRAINED_MODEL, MODEL_NAME):
+def get_pretrained_model(MODEL_NAME=MODEL_NAME, PRETRAINED_MODEL=PRETRAINED_MODEL):
     if PRETRAINED_MODEL.exists():
         pretrained_model = BertModel.from_pretrained(PRETRAINED_MODEL)
     else:
@@ -66,8 +66,8 @@ def save_model(model, optimizer, pretrained_model):
     torch.save(model, FINETUNED_MODEL)
 
 
-def load_model(model_dir):
-    return torch.load(model_dir)
+def load_model(model_dir=FINETUNED_MODEL, device='cpu'):
+    return torch.load(model_dir, map_location=torch.device(device))
 
 
 def load_model_safe(model_dir, num_label):
