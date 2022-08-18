@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 import torch
 from transformers import BertTokenizer, BertModel
-from .bert import BertClass
 
 
 MODEL_NAME = 'bert-base-uncased'
@@ -70,11 +69,11 @@ def load_model(model_dir=FINETUNED_MODEL, device='cpu'):
     return torch.load(model_dir, map_location=torch.device(device))
 
 
-def load_model_safe(model_dir, num_label):
-    pretrained_model = get_pretrained_model(PRETRAINED_MODEL, MODEL_NAME)
-    model = BertClass(pretrained_model, num_label)
-    model.load_state_dict(torch.load(FINETUNED_MODEL_STATE))
-    return model
+# def load_model_safe(model_dir, num_label):
+#     pretrained_model = get_pretrained_model(PRETRAINED_MODEL, MODEL_NAME)
+#     model = BertClass(pretrained_model, num_label)
+#     model.load_state_dict(torch.load(FINETUNED_MODEL_STATE))
+#     return model
 
 
 def save_label_dict(label_dict, dir='../models/bert/fine-tuned/labels-dict.json'):
