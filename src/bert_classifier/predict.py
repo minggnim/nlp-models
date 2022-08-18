@@ -1,3 +1,6 @@
+'''
+Inference module
+'''
 import torch
 from .bert import bert_encoder
 from .io import get_pretrained_tokenizer
@@ -6,14 +9,20 @@ from .io import get_pretrained_tokenizer
 MAX_LEN = 512
 
 
-class Inference(object):
+class Inference:
+    '''
+    inference class
+    '''
     def __init__(self, model, labels, tokenizer=None, max_len=MAX_LEN):
         self.tokenizer = tokenizer if tokenizer else get_pretrained_tokenizer()
         self.model = model
         self.labels = labels
         self.max_len = max_len
 
-    def predict(self, inp):
+    def predict(self, inp: str):
+        '''
+        inp: text input
+        '''
         self.model.eval()
         enc = bert_encoder(inp, self.tokenizer, self.max_len)
         out = self.model(*enc)[-1].detach().cpu()
@@ -27,4 +36,7 @@ class Inference(object):
 
 
 def load_model(model_dir, device='cpu'):
+    '''
+    load full model
+    '''
     return torch.load(model_dir, map_location=device)
