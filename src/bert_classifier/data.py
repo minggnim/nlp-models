@@ -23,12 +23,26 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         content = str(self.content[index])
         content = " ".join(content.split())
-        ids, mask, token_type_ids = bert_encoder(content, self.tokenizer, self.max_len)
+        encoded_content = bert_encoder(content, self.tokenizer, self.max_len)
 
         return {
-            'ids': ids,
-            'mask': mask,
-            'type_ids': token_type_ids,
+            'input_ids': encoded_content['input_ids'],
+            'attention_mask': encoded_content['attention_mask'],
+            'token_type_ids': encoded_content['token_type_ids'],
             'label': torch.tensor(self.label[index], dtype=torch.long),
             # 'multi_label': torch.tensor(self.label[index], dtype=torch.float)
         }
+
+
+def create_label_dict(dataframe, label_col):
+    labels = dataframe.groupby(label_col).size().sort_values(ascending=False).index.tolist()
+    label_dict = dict([(d, i) for i, d in enumerate(labels)])
+    return label_dict
+
+
+def label2id(dataframe, label_col, label_dict, multi_class=False):
+    if multi_class:
+        dataframe['label'] = dataframe[label_col].apply(lambda c: [int(c==l) for l in label_dict.keys()])
+    else:
+        dataframe['label'] = dataframe[label_col].apply(lambda c: label_dict[c])
+    return dataframe

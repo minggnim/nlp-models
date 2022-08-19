@@ -104,7 +104,7 @@ def save_label_dict(label_dict, dict_file=LABEL_DICT):
         json.dump(label_dict, file)
 
 
-def load_label_dict(label_dir):
+def load_label_dict(label_file=LABEL_DICT):
     '''load label dictionary'''
-    with open(label_dir, 'r') as file:
+    with open(label_file, 'r') as file:
         return json.load(file)

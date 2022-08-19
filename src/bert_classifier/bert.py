@@ -38,7 +38,4 @@ def bert_encoder(content, tokenizer, max_len):
         return_token_type_ids=True,
         return_tensors='pt'
     )
-    ids = inputs['input_ids']
-    mask = inputs['attention_mask']
-    token_type_ids = inputs['token_type_ids']
-    return ids, mask, token_type_ids
+    return inputs

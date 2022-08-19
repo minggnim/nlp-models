@@ -25,7 +25,7 @@ class Inference:
         '''
         self.model.eval()
         enc = bert_encoder(inp, self.tokenizer, self.max_len)
-        out = self.model(*enc)[-1].detach().cpu()
+        out = self.model(**enc)[-1].detach().cpu()
         idx = out.argmax().item()
         label = self.labels[idx]
         proba = out.softmax(-1)[idx].item()

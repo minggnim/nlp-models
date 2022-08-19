@@ -11,13 +11,16 @@ from sklearn.metrics import (
 )
 
 
-def transform_outputs(outputs, targets):
+def transform_outputs(outputs, targets, multi_label=False):
     '''
     transform outputs to suitable format for calculating performance metrics
     '''
     preds = np.array(outputs).argmax(axis=-1)
-    # y = np.array(targets).argmax(axis=1)  # for multilabel
-    return targets, preds
+    if multi_label:
+        y = np.array(targets).argmax(axis=1)
+    else:
+        y = targets
+    return y, preds
 
 
 def accuracy_metrics(outputs, targets):

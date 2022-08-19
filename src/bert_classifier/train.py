@@ -26,7 +26,7 @@ def loss_fn(outputs, targets):
     return torch.nn.CrossEntropyLoss()(outputs, targets)
 
 
-def train(model, optimizer, train_dataloader, test_dataloader, epochs):
+def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs):
     '''
     custom training module
     '''
@@ -40,9 +40,9 @@ def train(model, optimizer, train_dataloader, test_dataloader, epochs):
         for _, batch in tqdm(enumerate(train_dataloader)):
             # import pdb; pdb.set_trace();
             model.zero_grad(set_to_none=True)
-            ids = batch['ids'].squeeze(1).to(DEVICE)
-            mask = batch['mask'].squeeze(1).to(DEVICE)
-            type_ids = batch['type_ids'].squeeze(1).to(DEVICE)
+            ids = batch['input_ids'].squeeze(1).to(DEVICE)
+            mask = batch['attention_mask'].squeeze(1).to(DEVICE)
+            type_ids = batch['token_type_ids'].squeeze(1).to(DEVICE)
             label = batch['label'].to(DEVICE)
             output = model(ids, mask, type_ids)
 
@@ -84,9 +84,9 @@ def validate(model, test_dataloader):
     val_targets, val_outputs, val_loss = [], [], []
     with torch.no_grad():
         for _, batch in enumerate(test_dataloader):
-            ids = batch['ids'].squeeze(1).to(DEVICE)
-            mask = batch['mask'].squeeze(1).to(DEVICE)
-            type_ids = batch['type_ids'].squeeze(1).to(DEVICE)
+            ids = batch['input_ids'].squeeze(1).to(DEVICE)
+            mask = batch['attention_mask'].squeeze(1).to(DEVICE)
+            type_ids = batch['token_type_ids'].squeeze(1).to(DEVICE)
             label = batch['label'].to(DEVICE)
             outputs = model(ids, mask, type_ids)
             val_targets.extend(label.detach().cpu().numpy())
