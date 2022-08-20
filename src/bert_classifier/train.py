@@ -35,7 +35,7 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs):
         print("")
         print(f'======== Epoch {epoch+1} / {epochs} ========')
         print(f'Total steps: {len(train_dataloader)} || Training in progress...')
-        epoch_start = time.time()
+        t0 = time.time()
         total_train_loss, total_train_accuracy = 0, 0
         for _, batch in tqdm(enumerate(train_dataloader)):
             # import pdb; pdb.set_trace();
@@ -62,7 +62,7 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs):
         print(f'''
             Training loss: {avg_train_loss} ||
             Training accuracy: {avg_train_accuracy} ||
-            Training time: {time.time() - epoch_start} seconds
+            Training time: {time.time() - t0} seconds
             ''')
         print('Evaluation in progress...')
         val_outputs, val_targets, val_loss = validate(model, test_dataloader)
@@ -71,7 +71,7 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs):
         print(f'''
             Validation loss: {avg_val_loss} ||
             Validation accuracy: {avg_val_accuracy} ||
-            Validation time: {time.time() - epoch_start} seconds
+            Validation time: {time.time() - t0} seconds
             ''')
         save_checkpoint(model, optimizer, epoch, avg_train_loss, avg_train_accuracy, avg_val_loss, avg_val_accuracy)
 
