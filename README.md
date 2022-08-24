@@ -6,12 +6,19 @@
 
 A repository for training deep learning classification models
 
-## Install from PyPi
+
+## Example Notebook (training)
+[notebooks/custom_training_bert_classifier.ipynb](https://github.com/minggnim/nlp-classification-model/blob/7f5d74603ce957813ce73ac43a18c21f275c6836/notebooks/custom_training_bert_classifier.ipynb)
+
+
+## Installation
+
+### Install from PyPi
 ```
 pip install bert_classifier
 ```
 
-## Install from source
+### Install from source
 ```
 git clone git@github.com:minggnim/bert-classifier.git
 pip install -r requirements
