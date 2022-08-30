@@ -15,9 +15,9 @@ class BertClass(torch.nn.Module):
         self.l2 = torch.nn.Dropout(self.l1.config.hidden_dropout_prob)
         self.l3 = torch.nn.Linear(self.l1.config.hidden_size, num_label)
 
-    def forward(self, ids, mask, type_ids):
+    def forward(self, input_ids, attention_mask, token_type_ids):
         # import pdb; pdb.set_trace();
-        last_hidden_state = self.l1(ids, mask, type_ids).last_hidden_state
+        last_hidden_state = self.l1(input_ids, attention_mask, token_type_ids).last_hidden_state
         cls_representation = last_hidden_state[:, 0, :]
         dropout_output = self.l2(cls_representation)
         pooled_output = self.l3(dropout_output)
