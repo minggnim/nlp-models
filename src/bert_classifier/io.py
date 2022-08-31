@@ -11,9 +11,10 @@ MODEL_NAME = 'bert-base-uncased'
 MODEL_DIR = Path('../models/bert')
 PRETRAINED_TOKENIZER = MODEL_DIR / 'pretrained/tokenizer-uncased'
 PRETRAINED_MODEL = MODEL_DIR / 'pretrained/bert-base-uncased'
-FINETUNED_MODEL = MODEL_DIR / 'fine-tuned/fine-tuned-uncased'
-FINETUNED_MODEL_STATE = MODEL_DIR / 'fine-tuned/model-state-dict'
-FINETUNED_OPT_STATE = MODEL_DIR / 'fine-tuned/opt-state-dict'
+FINETUNED_DIR = MODEL_DIR / 'fine-tuned'
+FINETUNED_MODEL = FINETUNED_DIR / 'fine-tuned-uncased'
+FINETUNED_MODEL_STATE = FINETUNED_DIR / 'model-state-dict'
+FINETUNED_OPT_STATE = FINETUNED_DIR / 'opt-state-dict'
 CHECKPOINT_DIR = MODEL_DIR / 'checkpoint'
 LABEL_DICT = MODEL_DIR / 'fine-tuned/labels-dict.json'
 
@@ -46,7 +47,9 @@ def save_checkpoint(model, optimizer, epoch, train_loss, train_accuracy, val_los
     '''
     save checkpoint
     '''
-    chkpt_path = CHECKPOINT_DIR / ('chkpt' + epoch + '.pt')
+    if not CHECKPOINT_DIR.exists():
+        CHECKPOINT_DIR.mkdir(parents=True)
+    chkpt_path = CHECKPOINT_DIR / ('chkpt' + str(epoch) + '.pt')
     torch.save({
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
@@ -77,6 +80,8 @@ def save_model(model, optimizer):
     '''
     save model para
     '''
+    if not FINETUNED_DIR.exists():
+        FINETUNED_DIR.mkdir(parents=True) 
     torch.save(model.state_dict(), FINETUNED_MODEL_STATE)
     torch.save(optimizer.state_dict(), FINETUNED_OPT_STATE)
     # loaded_model = BertClass(pretrained_model, model.l3.out_features)

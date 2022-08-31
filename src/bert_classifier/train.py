@@ -26,7 +26,7 @@ def loss_fn(outputs, targets):
     return torch.nn.CrossEntropyLoss()(outputs, targets)
 
 
-def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs):
+def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5):
     '''
     custom training module
     '''
@@ -60,18 +60,18 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs):
         avg_train_loss = total_train_loss / len(train_dataloader)
         avg_train_accuracy = total_train_accuracy / len(train_dataloader)
         print(f'''
+            Training time: {time.time() - t0} seconds ||
             Training loss: {avg_train_loss} ||
-            Training accuracy: {avg_train_accuracy} ||
-            Training time: {time.time() - t0} seconds
+            Training accuracy: {avg_train_accuracy}
             ''')
         print('Evaluation in progress...')
         val_outputs, val_targets, val_loss = validate(model, test_dataloader)
         avg_val_loss = np.array(val_loss).mean()
         avg_val_accuracy = accuracy_metrics(val_outputs, val_targets)
         print(f'''
-            Validation loss: {avg_val_loss} ||
-            Validation accuracy: {avg_val_accuracy} ||
             Validation time: {time.time() - t0} seconds
+            Validation loss: {avg_val_loss} ||
+            Validation accuracy: {avg_val_accuracy}
             ''')
         save_checkpoint(model, optimizer, epoch, avg_train_loss, avg_train_accuracy, avg_val_loss, avg_val_accuracy)
 
