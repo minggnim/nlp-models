@@ -9,11 +9,10 @@ A repository for training deep learning classification models
 
 ## Example Notebook
 
-### Training
-[notebooks/01_custom_training_example.ipynb](https://github.com/minggnim/nlp-classification-model/blob/master/notebooks/01_custom_training_example.ipynb)
+### [Training](https://github.com/minggnim/nlp-classification-model/blob/master/notebooks/01_custom_training_example.ipynb)
 
-### Inference
-[notebooks/02_inference_example.ipynb](https://github.com/minggnim/nlp-classification-model/blob/master/notebooks/02_inference_example.ipynb)
+### [Inference](https://github.com/minggnim/nlp-classification-model/blob/master/notebooks/02_inference_example.ipynb)
+
 
 ## Installation
 
