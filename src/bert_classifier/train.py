@@ -9,9 +9,6 @@ from .io import save_checkpoint
 from .metrics import accuracy_metrics
 
 
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-
 def loss_fn_multiple_labels(outputs, targets):
     '''
     binary cross entropy loss for multi-labels
@@ -26,7 +23,7 @@ def loss_fn(outputs, targets):
     return torch.nn.CrossEntropyLoss()(outputs, targets)
 
 
-def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5):
+def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5, device='cpu'):
     '''
     custom training module
     '''
@@ -40,16 +37,16 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5
         for _, batch in tqdm(enumerate(train_dataloader)):
             # import pdb; pdb.set_trace();
             model.zero_grad(set_to_none=True)
-            ids = batch['input_ids'].squeeze(1).to(DEVICE)
-            mask = batch['attention_mask'].squeeze(1).to(DEVICE)
-            type_ids = batch['token_type_ids'].squeeze(1).to(DEVICE)
-            label = batch['label'].to(DEVICE)
+            ids = batch['input_ids'].squeeze(1).to(device)
+            mask = batch['attention_mask'].squeeze(1).to(device)
+            type_ids = batch['token_type_ids'].squeeze(1).to(device)
+            label = batch['label'].to(device)
             output = model(ids, mask, type_ids)
 
             loss = loss_fn(output, label)
             total_train_loss += loss.item()
 
-            total_train_accuracy += accuracy_metrics(output.detach().to(DEVICE).numpy(), label.detach().to(DEVICE).numpy())
+            total_train_accuracy += accuracy_metrics(output.detach().to(device).numpy(), label.detach().to(device).numpy())
 
             # if step % 5000 == 0:
             #     print(f'Epoch: {epoch}, Loss: {loss.item()}')
@@ -65,7 +62,7 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5
             Training accuracy: {avg_train_accuracy}
             ''')
         print('Evaluation in progress...')
-        val_outputs, val_targets, val_loss = validate(model, test_dataloader)
+        val_outputs, val_targets, val_loss = validate(model, test_dataloader, device)
         avg_val_loss = np.array(val_loss).mean()
         avg_val_accuracy = accuracy_metrics(val_outputs, val_targets)
         print(f'''
@@ -76,7 +73,7 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5
         save_checkpoint(model, optimizer, epoch, avg_train_loss, avg_train_accuracy, avg_val_loss, avg_val_accuracy)
 
 
-def validate(model, test_dataloader):
+def validate(model, test_dataloader, device='cpu'):
     '''
     produce validation results
     '''
@@ -84,10 +81,10 @@ def validate(model, test_dataloader):
     val_targets, val_outputs, val_loss = [], [], []
     with torch.no_grad():
         for _, batch in enumerate(test_dataloader):
-            ids = batch['input_ids'].squeeze(1).to(DEVICE)
-            mask = batch['attention_mask'].squeeze(1).to(DEVICE)
-            type_ids = batch['token_type_ids'].squeeze(1).to(DEVICE)
-            label = batch['label'].to(DEVICE)
+            ids = batch['input_ids'].squeeze(1).to(device)
+            mask = batch['attention_mask'].squeeze(1).to(device)
+            type_ids = batch['token_type_ids'].squeeze(1).to(device)
+            label = batch['label'].to(device)
             outputs = model(ids, mask, type_ids)
             val_targets.extend(label.detach().cpu().numpy())
             val_outputs.extend(torch.sigmoid(outputs).detach().cpu().numpy())
