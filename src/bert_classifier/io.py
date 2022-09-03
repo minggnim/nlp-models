@@ -84,8 +84,6 @@ def save_model(model, optimizer):
         FINETUNED_DIR.mkdir(parents=True) 
     torch.save(model.state_dict(), FINETUNED_MODEL_STATE)
     torch.save(optimizer.state_dict(), FINETUNED_OPT_STATE)
-    # loaded_model = BertClass(pretrained_model, model.l3.out_features)
-    # loaded_model.load_state_dict(torch.load(FINETUNED_MODEL_STATE))
     torch.save(model, FINETUNED_MODEL)
 
 
@@ -96,11 +94,14 @@ def load_model(model_dir=FINETUNED_MODEL, device='cpu'):
     return torch.load(model_dir, map_location=torch.device(device))
 
 
-# def load_model_safe(model_dir, num_label):
-#     pretrained_model = get_pretrained_model(PRETRAINED_MODEL, MODEL_NAME)
-#     model = BertClass(pretrained_model, num_label)
-#     model.load_state_dict(torch.load(FINETUNED_MODEL_STATE))
-#     return model
+def load_model_safe(num_label):
+    '''
+    preferred and more flexible way to load model
+    '''
+    pretrained_model = get_pretrained_model(PRETRAINED_MODEL, MODEL_NAME)
+    model = BertClass(pretrained_model, num_label)
+    model.load_state_dict(torch.load(FINETUNED_MODEL_STATE))
+    return model
 
 
 def save_label_dict(label_dict, dict_file=LABEL_DICT):
