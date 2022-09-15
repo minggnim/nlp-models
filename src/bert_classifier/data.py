@@ -42,7 +42,7 @@ def create_label_dict(dataframe, label_col):
 
 def label2id(dataframe, label_col, label_dict, multi_class=False):
     if multi_class:
-        dataframe['label'] = dataframe[label_col].apply(lambda c: [int(c==l) for l in label_dict.keys()])
+        dataframe['label'] = dataframe[label_col].apply(lambda c: [int(c == k) for k in label_dict.keys()])
     else:
         dataframe['label'] = dataframe[label_col].apply(lambda c: label_dict[c])
     return dataframe
