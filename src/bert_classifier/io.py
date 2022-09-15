@@ -81,7 +81,7 @@ def save_model(model, optimizer):
     save model para
     '''
     if not FINETUNED_DIR.exists():
-        FINETUNED_DIR.mkdir(parents=True) 
+        FINETUNED_DIR.mkdir(parents=True)
     torch.save(model.state_dict(), FINETUNED_MODEL_STATE)
     torch.save(optimizer.state_dict(), FINETUNED_OPT_STATE)
     torch.save(model, FINETUNED_MODEL)
@@ -98,6 +98,7 @@ def load_model_safe(num_label):
     '''
     preferred and more flexible way to load model
     '''
+    from .bert import BertClass
     pretrained_model = get_pretrained_model(PRETRAINED_MODEL, MODEL_NAME)
     model = BertClass(pretrained_model, num_label)
     model.load_state_dict(torch.load(FINETUNED_MODEL_STATE))

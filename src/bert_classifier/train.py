@@ -25,7 +25,7 @@ def loss_fn(outputs, targets):
 
 def optimizer(model, learning_rate):
     optimizer = torch.optim.AdamW(
-        params=model.parameters(), 
+        params=model.parameters(),
         lr=learning_rate
     )
     return optimizer
