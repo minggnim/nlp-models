@@ -54,7 +54,7 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5
             loss = loss_fn(output, label)
             total_train_loss += loss.item()
 
-            total_train_accuracy += accuracy_metrics(output.detach().to(device).numpy(), label.detach().to(device).numpy())
+            total_train_accuracy += accuracy_metrics(output.detach().cpu().numpy(), label.detach().cpu().numpy())
 
             # if step % 5000 == 0:
             #     print(f'Epoch: {epoch}, Loss: {loss.item()}')
