@@ -23,21 +23,21 @@ def transform_outputs(outputs, targets, multi_label=False):
     return y, preds
 
 
-def accuracy_metrics(outputs, targets):
+def accuracy_metrics(outputs, targets, multi_label=False):
     '''
     function to calculate accuracy
     outputs: model outputs
     targets: labels
     '''
-    targets, preds = transform_outputs(outputs, targets)
+    targets, preds = transform_outputs(outputs, targets, multi_label)
     return accuracy_score(targets, preds)
 
 
-def classification_metrics(outputs, targets):
+def classification_metrics(outputs, targets, multi_label=False):
     '''
     collection of classification metrics
     '''
-    targets, preds = transform_outputs(outputs, targets)
+    targets, preds = transform_outputs(outputs, targets, multi_label)
     return dict([
         ('n', len(targets)),
         ('accuracy', accuracy_score(targets, preds)),
