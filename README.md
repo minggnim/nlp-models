@@ -2,7 +2,7 @@
 [![Python package](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-package.yml/badge.svg)](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-package.yml)
 [![Upload Python Package](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-publish.yml/badge.svg)](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-publish.yml)
 
-# NLP-Models
+# NLP Models
 
 A repository for training transformer based nlp models
 
