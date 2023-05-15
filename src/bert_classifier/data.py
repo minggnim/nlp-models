@@ -10,12 +10,13 @@ class CustomDataset(Dataset):
     '''
     Class to construct torch Dataset from dataframe
     '''
-    def __init__(self, dataframe, data_field, label_field, tokenizer, max_len):
+    def __init__(self, dataframe, data_field, label_field, tokenizer, max_len, multi_label):
         self.max_len = max_len
         self.data = dataframe
         self.tokenizer = tokenizer
         self.content = self.data[data_field]
         self.label = self.data[label_field]
+        self.multi_label = multi_label
 
     def __len__(self):
         return len(self.content)
@@ -23,15 +24,23 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         content = str(self.content[index])
         content = " ".join(content.split())
-        encoded_content = bert_encoder(content, self.tokenizer, self.max_len)
+        encoded_content = self.tokenizer.encode_plus(
+            content,
+            add_special_tokens=True,
+            truncation=True,
+            padding='max_length',
+            max_length=self.max_len,
+            return_attention_mask=True,
+            return_token_type_ids=True,
+            return_tensors='pt'
+        )
+        features = encoded_content
+        if self.multi_label:
+            labels = torch.tensor(self.label[index], dtype=torch.float)
+        else:
+            labels = torch.tensor(self.label[index], dtype=torch.long)
 
-        return {
-            'input_ids': encoded_content['input_ids'],
-            'attention_mask': encoded_content['attention_mask'],
-            'token_type_ids': encoded_content['token_type_ids'],
-            'label': torch.tensor(self.label[index], dtype=torch.long),
-            # 'multi_label': torch.tensor(self.label[index], dtype=torch.float)
-        }
+        return features, labels
 
 
 def create_label_dict(dataframe, label_col):
