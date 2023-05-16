@@ -6,9 +6,9 @@ from typing import Optional, Literal
 from torch.utils.data import DataLoader
 from tqdm.autonotebook import trange
 from bert_classifier.io import save_checkpoint
-from metrics import accuracy
-from loss import cross_entropy_loss_fn
-from utils import batch_to_device
+from .metrics import accuracy
+from .loss import cross_entropy_loss_fn
+from .utils import batch_to_device
 
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
