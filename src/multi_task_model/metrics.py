@@ -29,6 +29,7 @@ def accuracy(
     targets, 
     multi_label: bool = False, 
     num_labels: Optional[int] = None,
+    device = 'cpu',
     average: Literal['micro', 'macro', 'weighted', 'none'] = 'macro'
     ):
     if multi_label:
@@ -38,4 +39,5 @@ def accuracy(
             accuracy = MultilabelAccuracy(num_labels, average=average)
     else:
         accuracy = BinaryAccuracy()
+    accuracy.to(device)
     return accuracy(outputs, targets)
