@@ -54,10 +54,10 @@ def get_scheduler(optimizer, scheduler: str, warmup_steps: int, t_total: int):
 
 def validate(model: torch.nn.Module,
              test_dataloader: DataLoader,
+             device: torch.device = torch.device('cpu'),
              multi_label: bool = False,
              num_labels: Optional[int] = None,
              metrics = accuracy,
-             device: torch.device = torch.device('cpu'),
              average: Literal['micro', 'macro', 'weighted', 'none'] = 'macro'
              ):
     '''
@@ -139,7 +139,7 @@ def custom_trainer(model: torch.nn.Module,
                 Average Accuracy: {avg_train_acc}
             ''')
         logger.info('Evaluation in progress...')
-        avg_val_loss, avg_val_acc = validate(model, test_dataloader, multi_label, num_labels, device, average=None)
+        avg_val_loss, avg_val_acc = validate(model, test_dataloader, device, multi_label, num_labels, average=None)
         logger.info(f'''
             Validation Info:
                 Time: {time.time() - t0} ||
