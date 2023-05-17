@@ -54,17 +54,19 @@ def get_scheduler(optimizer, scheduler: str, warmup_steps: int, t_total: int):
 
 def validate(model: torch.nn.Module,
              test_dataloader: DataLoader,
-             device: torch.device = torch.device('cpu'),
              multi_label: bool = False,
              num_labels: Optional[int] = None,
              metrics = accuracy,
+             device: torch.device = torch.device('cpu'),
              average: Literal['micro', 'macro', 'weighted', 'none'] = 'macro'
              ):
     '''
     Validate module
     '''
     model.eval()
-    val_targets, val_outputs, val_loss = torch.tensor(()), torch.tensor(()), torch.tensor(())
+    val_targets = torch.tensor(()).to(device)
+    val_outputs = torch.tensor(()).to(device)
+    val_loss = torch.tensor(()).to(device)
     with torch.no_grad():
         for features, labels in test_dataloader:
             labels = labels.to(device)
@@ -75,7 +77,7 @@ def validate(model: torch.nn.Module,
             val_targets = torch.cat((val_targets, labels), 0)
             val_loss = torch.cat((val_loss, cross_entropy_loss_fn(output, labels, multi_label).reshape(1)), 0)
     avg_val_loss = val_loss.mean()
-    avg_val_acc = metrics(val_outputs, val_targets, True, num_labels, average)
+    avg_val_acc = metrics(val_outputs, val_targets, True, num_labels, device, average)
     return avg_val_loss, avg_val_acc
 
 
@@ -126,7 +128,7 @@ def custom_trainer(model: torch.nn.Module,
             optimizer_obj.zero_grad()
 
             total_train_loss += loss.item()
-            total_train_acc += metrics(output, labels, multi_label, num_labels)
+            total_train_acc += metrics(output, labels, multi_label, num_labels, device)
 
         avg_train_loss = total_train_loss / len(train_dataloader)
         avg_train_acc = total_train_acc / len(train_dataloader)
@@ -137,7 +139,7 @@ def custom_trainer(model: torch.nn.Module,
                 Average Accuracy: {avg_train_acc}
             ''')
         logger.info('Evaluation in progress...')
-        avg_val_loss, avg_val_acc = validate(model, test_dataloader, device, multi_label, num_labels, average=None)
+        avg_val_loss, avg_val_acc = validate(model, test_dataloader, multi_label, num_labels, device, average=None)
         logger.info(f'''
             Validation Info:
                 Time: {time.time() - t0} ||
