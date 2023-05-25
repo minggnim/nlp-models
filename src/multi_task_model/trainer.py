@@ -1,150 +1,223 @@
-import time
-import logging
+import gc
 import torch
 import transformers
-from typing import Optional, Literal
+from pathlib import Path
+from tqdm.notebook import tqdm
+from typing import Optional, Dict
+from dataclasses import dataclass, field
 from torch.utils.data import DataLoader
-from tqdm.autonotebook import trange
-from bert_classifier.io import save_checkpoint
 from .metrics import accuracy
-from .loss import cross_entropy_loss_fn
 from .utils import batch_to_device
-
-logger = logging.getLogger()
-logger.setLevel(logging.WARNING)
+from .loss import cross_entropy_loss_fn
 
 
-def get_optimizer(param_optimizer,
-                  optimizer_class = torch.optim.AdamW,
-                  optimizer_params: dict = {'lr': 2e-5},
-                  weight_decay: float = 0.01
-                  ):
-    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
-    optimizer_grouped_params = [
-        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': weight_decay},
-        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-    ]
-    optimizer = optimizer_class(optimizer_grouped_params, **optimizer_params)
-    return optimizer
+@dataclass
+class Configs:
+    epochs: int = 1
+    optimizer_class = torch.optim.AdamW
+    optimizer_params: Dict[str, float] = field(default_factory = lambda: ({"lr": 2e-5})) 
+    weight_decay: float = 0.01
+    scheduler: str = 'WarmupLinear'
+    warmup_steps: int = 10000
+    multi_label: bool = False
+    num_labels: Optional[int] = None
+    tune_base_model: bool = True
 
 
-def get_scheduler(optimizer, scheduler: str, warmup_steps: int, t_total: int):
-    '''
-    Returns the correct learning rate scheduler.
-    Available scheduler: constantlr, warmupconstant, warmuplinear, warmupcosine, warmupcosinewithhardrestarts
-    '''
-    scheduler = scheduler.lower()
-    if scheduler == 'constantlr':
-        return transformers.get_constant_schedule(optimizer)
-    elif scheduler == 'warmupconstant':
-        return transformers.get_constant_schedule_with_warmup(
-            optimizer, num_warmup_steps=warmup_steps)
-    elif scheduler == 'warmuplinear':
-        return transformers.get_linear_schedule_with_warmup(
-            optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
-    elif scheduler == 'warmupcosine':
-        return transformers.get_cosine_schedule_with_warmup(
-            optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
-    elif scheduler == 'warmupcosinewithhardrestarts':
-        return transformers.get_cosine_with_hard_restarts_schedule_with_warmup(
-            optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
-    else:
-        raise ValueError(f'Unkown scheduler {scheduler}')
-
-
-def validate(model: torch.nn.Module,
-             test_dataloader: DataLoader,
-             device: torch.device = torch.device('cpu'),
-             multi_label: bool = False,
-             num_labels: Optional[int] = None,
-             metrics = accuracy,
-             average: Literal['micro', 'macro', 'weighted', 'none'] = 'macro'
-             ):
-    '''
-    Validate module
-    '''
-    model.eval()
-    val_targets = torch.tensor(()).to(device)
-    val_outputs = torch.tensor(()).to(device)
-    val_loss = torch.tensor(()).to(device)
-    with torch.no_grad():
-        for features, labels in test_dataloader:
-            labels = labels.to(device)
-            features = batch_to_device(features, device)
-            outputs = model(**features)
-            output = outputs[0]
-            val_outputs = torch.cat((val_outputs, output), 0)
-            val_targets = torch.cat((val_targets, labels), 0)
-            val_loss = torch.cat((val_loss, cross_entropy_loss_fn(output, labels, multi_label).reshape(1)), 0)
-    avg_val_loss = val_loss.mean()
-    avg_val_acc = metrics(val_outputs, val_targets, True, num_labels, device, average)
-    return avg_val_loss, avg_val_acc
-
-
-def custom_trainer(model: torch.nn.Module,
-                   train_dataloader: DataLoader,
-                   test_dataloader: DataLoader,
-                   epochs: int = 1,
-                   optimizer_class = torch.optim.AdamW,
-                   optimizer_params: dict = {'lr': 2e-5},
-                   weight_decay: float = 0.01,
-                   scheduler: str = 'WarmupLinear',
-                   warmup_steps: int = 10000,
-                   multi_label: bool = False,
-                   num_labels: Optional[int] = None,
-                   tune_base_model: bool = True,
-                   metrics = accuracy,
-                   device: torch.device = torch.device('cpu')
-                   ):
-    '''
-    Custom training module
-    '''
-    if not tune_base_model:
-        for param in model.base_model.parameters():
-            param.requires_grad = False
+class Trainer:
+    def __init__(self, 
+                 model: torch.nn.Module,
+                 train_dataloader: DataLoader,
+                 test_dataloader: DataLoader,
+                 configs: Configs,
+                 metrics = accuracy,
+                 device: torch.device = torch.device('cpu'),
+                 chkpt_dir = Path('../chkpt')
+                 ):
+        self.model = model
+        self.train_dataloader = train_dataloader
+        self.test_dataloader = test_dataloader
+        self.configs = configs
+        self.metrics = metrics
+        self.device = device
+        self.chkpt_dir = chkpt_dir
+        self.set_optimizer()
+        self.train_logs = []
+        self.val_logs = []
     
-    param_optimizer = list(model.named_parameters())
-    optimizer_obj = get_optimizer(param_optimizer, optimizer_class, optimizer_params, weight_decay)
-    scheduler_obj = get_scheduler(optimizer_obj, scheduler, warmup_steps, len(train_dataloader)*epochs)
+    def set_optimizer(self):
+        if not self.configs.tune_base_model:
+            for param in self.model.base_model.parameters():
+                param.requires_grad = False
 
-    model.train()
-    for epoch in trange(epochs):
-        model.zero_grad(set_to_none=True)
-        logger.info(f'====== Epoch {epoch+1} / {epochs} ======')
-        logger.info(f'Total steps: {len(train_dataloader)} || Training in progress...')
-        t0 = time.time()
-        total_train_loss = total_train_acc = 0
-        for _, (features, labels) in enumerate(train_dataloader):
-            labels = labels.to(device)
-            features = batch_to_device(features, device)
-            outputs = model(**features)
-            output = outputs[0]
-            loss = cross_entropy_loss_fn(output, labels, multi_label)
+        self.optimizer = self.get_optimizer(
+            list(self.model.named_parameters()), 
+            self.configs.optimizer_class, 
+            self.configs.optimizer_params, 
+            self.configs.weight_decay
+            )
+        self.scheduler = self.get_scheduler(
+            self.optimizer, 
+            self.configs.scheduler, 
+            self.configs.warmup_steps, 
+            len(self.train_dataloader)*self.configs.epochs
+            )
+
+    def logger(self, epoch, metrics, loss, mode):
+        log = {
+            f'epoch_{epoch-1}': {
+                'loss': loss,
+                'accuracy': metrics
+            }
+        }
+        if mode == 'train':
+            self.train_logs.append(log)
+        else:
+            self.val_logs.append(log)
+
+    def print_per_epoch(self, epoch):
+        print(f"\n\n{'-'*30}EPOCH {epoch}/{self.configs.epochs}{'-'*30}")
+        epoch -= 1 
+        train_loss = self.train_logs[epoch][f'epoch_{epoch}']['loss']
+        train_acc = self.train_logs[epoch][f'epoch_{epoch}']['accuracy']
+        val_loss = self.val_logs[epoch][f'epoch_{epoch}']['loss']
+        val_acc = self.val_logs[epoch][f'epoch_{epoch}']['accuracy']
+        print(f"Train -> LOSS: {train_loss} | ACCURACY: {train_acc}")
+        print(f"Validation -> LOSS: {val_loss} | ACCURACY: {val_acc}\n\n\n")
+
+    def save_checkpoint(self, epoch):
+        if not self.chkpt_dir.exists():
+            self.chkpt_dir.mkdir(parents=True)
+        epoch -= 1
+        chkpt_path = self.chkpt_dir / ('chkpt' + str(epoch) + '.pt')
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'train_loss': self.train_logs[epoch][f'epoch_{epoch}']['loss'],
+            'val_loss': self.val_logs[epoch][f'epoch_{epoch}']['loss'],
+            'train_acc': self.train_logs[epoch][f'epoch_{epoch}']['accuracy'],
+            'val_acc': self.val_logs[epoch][f'epoch_{epoch}']['accuracy'],
+        }, chkpt_path)
+
+    def load_checkpoint(self, chkpt_dir):
+        chkpt = torch.load(chkpt_dir)
+        self.model.load_state_dict(chkpt['model_state_dict'])
+        self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
+
+    def clear(self):
+        gc.collect()
+        torch.cuda.empty_cache()
+    
+    def fit(self):
+        epochs = tqdm(range(1, self.configs.epochs+1), leave = True, desc="Training...")
+        for epoch in epochs:
+            self.model.train()
+            epochs.set_description(f"EPOCH {epoch} / {self.configs.epochs} | training...")
+            self.train_one_epoch(epoch)
+            self.clear()
             
+            self.model.eval()
+            epochs.set_description(f"EPOCH {epoch} / {self.configs.epochs} | validating...")
+            self.validate_one_epoch(epoch)
+            self.clear()
+                
+            self.print_per_epoch(epoch)
+            self.save_checkpoint(epoch)
+
+    def train_one_epoch(self, epoch):
+        batches = tqdm(self.train_dataloader, total=len(self.train_dataloader))
+        total_train_loss = total_train_acc = 0
+        for features, labels in batches:
+            labels = labels.to(self.device)
+            features = batch_to_device(features, self.device)
+            outputs = self.model(**features)
+            loss = cross_entropy_loss_fn(outputs[0], labels, self.configs.multi_label)
+
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            optimizer_obj.step()
-            scheduler_obj.step()
-            optimizer_obj.zero_grad()
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+            self.optimizer.step()
+            self.scheduler.step()
 
             total_train_loss += loss.item()
-            total_train_acc += metrics(output, labels, multi_label, num_labels, device)
-
-        avg_train_loss = total_train_loss / len(train_dataloader)
-        avg_train_acc = total_train_acc / len(train_dataloader)
-        logger.info(f'''
-            Training Info: 
-                Total Time: {time.time() - t0} sec || 
-                Average Loss: {avg_train_loss} ||
-                Average Accuracy: {avg_train_acc}
-            ''')
-        logger.info('Evaluation in progress...')
-        avg_val_loss, avg_val_acc = validate(model, test_dataloader, device, multi_label, num_labels, average=None)
-        logger.info(f'''
-            Validation Info:
-                Time: {time.time() - t0} ||
-                Loss: {avg_val_loss} ||
-                Accuracy: {avg_val_acc}
-        ''')
-        save_checkpoint(model, optimizer_obj, epoch, avg_train_loss, avg_train_acc, avg_val_loss, avg_val_acc)
+            total_train_acc += self.metrics(
+                outputs[0], labels, 
+                self.configs.multi_label, 
+                self.configs.num_labels, 
+                self.device).item()
+            
+            batches.set_description(f"Train Loss Step: {loss.item():.2f}")
         
+        self.logger(
+            epoch, 
+            total_train_acc/len(self.train_dataloader), 
+            total_train_loss/len(self.train_dataloader),
+            'train')
+
+    @torch.no_grad()
+    def validate_one_epoch(self, epoch):
+        '''
+        Validate module
+        '''
+        self.model.eval()
+        val_targets = torch.tensor(()).to(self.device)
+        val_outputs = torch.tensor(()).to(self.device)
+        val_loss = torch.tensor(()).to(self.device)
+
+        batches = tqdm(self.test_dataloader, total=len(self.test_dataloader))
+        for features, labels in batches:
+            labels = labels.to(self.device)
+            features = batch_to_device(features, self.device)
+            outputs = self.model(**features)
+            val_outputs = torch.cat((val_outputs, outputs[0]), 0)
+            val_targets = torch.cat((val_targets, labels), 0)
+            loss = cross_entropy_loss_fn(outputs[0], labels, self.configs.multi_label).reshape(1)
+            val_loss = torch.cat((val_loss, loss), 0)
+            batches.set_description(f"Validation Loss Step: {loss.item():.2f}")
+        
+        avg_val_loss = val_loss.mean().item()
+        avg_val_acc = self.metrics(
+            val_outputs, val_targets, 
+            self.configs.multi_label, 
+            self.configs.num_labels, 
+            self.device).item()
+        
+        self.logger(epoch, avg_val_acc, avg_val_loss, 'test')
+
+    @staticmethod
+    def get_optimizer(param_optimizer,
+                      optimizer_class = torch.optim.AdamW,
+                      optimizer_params: dict = {'lr': 2e-5},
+                      weight_decay: float = 0.01
+                      ):
+        no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+        optimizer_grouped_params = [
+            {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': weight_decay},
+            {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+        ]
+        optimizer = optimizer_class(optimizer_grouped_params, **optimizer_params)
+        return optimizer
+
+    @staticmethod
+    def get_scheduler(optimizer, scheduler: str, warmup_steps: int, t_total: int):
+        '''
+        Returns the correct learning rate scheduler.
+        Available scheduler: constantlr, warmupconstant, warmuplinear, warmupcosine, warmupcosinewithhardrestarts
+        '''
+        scheduler = scheduler.lower()
+        if scheduler == 'constantlr':
+            return transformers.get_constant_schedule(optimizer)
+        elif scheduler == 'warmupconstant':
+            return transformers.get_constant_schedule_with_warmup(
+                optimizer, num_warmup_steps=warmup_steps)
+        elif scheduler == 'warmuplinear':
+            return transformers.get_linear_schedule_with_warmup(
+                optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
+        elif scheduler == 'warmupcosine':
+            return transformers.get_cosine_schedule_with_warmup(
+                optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
+        elif scheduler == 'warmupcosinewithhardrestarts':
+            return transformers.get_cosine_with_hard_restarts_schedule_with_warmup(
+                optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
+        else:
+            raise ValueError(f'Unkown scheduler {scheduler}')
