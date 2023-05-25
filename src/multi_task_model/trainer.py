@@ -54,14 +54,13 @@ class Trainer:
             list(self.model.named_parameters()), 
             self.configs.optimizer_class, 
             self.configs.optimizer_params, 
-            self.configs.weight_decay
-            )
+            self.configs.weight_decay)
+        
         self.scheduler = self.get_scheduler(
             self.optimizer, 
             self.configs.scheduler, 
             self.configs.warmup_steps, 
-            len(self.train_dataloader)*self.configs.epochs
-            )
+            len(self.train_dataloader)*self.configs.epochs)
 
     def logger(self, epoch, metrics, loss, mode):
         log = {
