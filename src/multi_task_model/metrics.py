@@ -1,3 +1,4 @@
+import torch
 from typing import Optional, Literal
 from torchmetrics.classification import (
     MultilabelHammingDistance,
@@ -29,15 +30,15 @@ def accuracy(
     targets, 
     multi_label: bool = False, 
     num_labels: Optional[int] = None,
-    device = 'cpu',
+    device = torch.device('cpu'),
     average: Literal['micro', 'macro', 'weighted', 'none'] = 'macro'
     ):
     if multi_label:
         if not num_labels:
             raise ValueError('num_labels is required for multi_label is True')
         else:
-            accuracy = MultilabelAccuracy(num_labels, average=average)
+            acc = MultilabelAccuracy(num_labels, average=average)
     else:
-        accuracy = BinaryAccuracy()
-    accuracy.to(device)
-    return accuracy(outputs, targets)
+        acc = BinaryAccuracy()
+    acc.to(device)
+    return acc(outputs, targets)
