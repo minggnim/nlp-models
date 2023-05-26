@@ -100,8 +100,7 @@ class Trainer:
         }, chkpt_path)
 
     def load_checkpoint(self, chkpt_dir):
-        chkpt = torch.load(chkpt_dir)
-        self.model.load_state_dict(chkpt['model_state_dict'])
+        self.model, chkpt = self.load_model_from_checkpoint(self.model, chkpt_dir)
         self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
         self.scheduler = self.get_scheduler(
             self.optimizer, 
@@ -225,3 +224,9 @@ class Trainer:
                 optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
         else:
             raise ValueError(f'Unkown scheduler {scheduler}')
+            
+    @staticmethod
+    def load_model_from_checkpoint(model, chkpt_dir):
+        chkpt = torch.load(chkpt_dir)
+        return model.load_state_dict(chkpt['model_state_dict']), chkpt
+    
