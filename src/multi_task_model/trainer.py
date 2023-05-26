@@ -54,14 +54,13 @@ class Trainer:
             list(self.model.named_parameters()), 
             self.configs.optimizer_class, 
             self.configs.optimizer_params, 
-            self.configs.weight_decay
-            )
+            self.configs.weight_decay)
+        
         self.scheduler = self.get_scheduler(
             self.optimizer, 
             self.configs.scheduler, 
             self.configs.warmup_steps, 
-            len(self.train_dataloader)*self.configs.epochs
-            )
+            len(self.train_dataloader)*self.configs.epochs)
 
     def logger(self, epoch, metrics, loss, mode):
         log = {
@@ -104,6 +103,11 @@ class Trainer:
         chkpt = torch.load(chkpt_dir)
         self.model.load_state_dict(chkpt['model_state_dict'])
         self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
+        self.scheduler = self.get_scheduler(
+            self.optimizer, 
+            self.configs.scheduler, 
+            0, 
+            len(self.train_dataloader)*self.configs.epochs)
 
     def clear(self):
         gc.collect()
