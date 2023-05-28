@@ -241,4 +241,3 @@ class Trainer:
     def clear(self):
         gc.collect()
         torch.cuda.empty_cache()
-    
