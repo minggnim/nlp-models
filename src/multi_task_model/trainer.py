@@ -41,11 +41,14 @@ class Trainer:
         self.metrics = metrics
         self.device = device
         self.chkpt_dir = chkpt_dir
-        self.set_optimizer()
+        self.set_params()
         self.train_logs = []
         self.val_logs = []
     
-    def set_optimizer(self):
+    def set_params(self):
+        '''
+        set parameters to optimize and schedule
+        '''
         if not self.configs.tune_base_model:
             for param in self.model.base_model.parameters():
                 param.requires_grad = False
@@ -61,59 +64,8 @@ class Trainer:
             self.configs.scheduler, 
             self.configs.warmup_steps, 
             len(self.train_dataloader)*self.configs.epochs)
-
-    def logger(self, epoch, metrics, loss, mode):
-        log = {
-            f'epoch_{epoch-1}': {
-                'loss': loss,
-                'accuracy': metrics
-            }
-        }
-        if mode == 'train':
-            self.train_logs.append(log)
-        else:
-            self.val_logs.append(log)
-
-    def print_per_epoch(self, epoch):
-        print(f"\n\n{'-'*30}EPOCH {epoch}/{self.configs.epochs}{'-'*30}")
-        epoch -= 1 
-        train_loss = self.train_logs[epoch][f'epoch_{epoch}']['loss']
-        train_acc = self.train_logs[epoch][f'epoch_{epoch}']['accuracy']
-        val_loss = self.val_logs[epoch][f'epoch_{epoch}']['loss']
-        val_acc = self.val_logs[epoch][f'epoch_{epoch}']['accuracy']
-        print(f"Train -> LOSS: {train_loss} | ACCURACY: {train_acc}")
-        print(f"Validation -> LOSS: {val_loss} | ACCURACY: {val_acc}\n\n\n")
-
-    def save_checkpoint(self, epoch):
-        if not self.chkpt_dir.exists():
-            self.chkpt_dir.mkdir(parents=True)
-        epoch -= 1
-        chkpt_path = self.chkpt_dir / ('chkpt' + str(epoch) + '.pt')
-        torch.save({
-            'epoch': epoch,
-            'model_state_dict': self.model.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
-            'train_loss': self.train_logs[epoch][f'epoch_{epoch}']['loss'],
-            'val_loss': self.val_logs[epoch][f'epoch_{epoch}']['loss'],
-            'train_acc': self.train_logs[epoch][f'epoch_{epoch}']['accuracy'],
-            'val_acc': self.val_logs[epoch][f'epoch_{epoch}']['accuracy'],
-        }, chkpt_path)
-
-    def load_checkpoint(self, chkpt_dir):
-        chkpt = torch.load(chkpt_dir)
-        self.model.load_state_dict(chkpt['model_state_dict'])
-        self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
-        self.scheduler = self.get_scheduler(
-            self.optimizer, 
-            self.configs.scheduler, 
-            0, 
-            len(self.train_dataloader)*self.configs.epochs)
-
-    def clear(self):
-        gc.collect()
-        torch.cuda.empty_cache()
     
-    def fit(self):
+    def train(self):
         epochs = tqdm(range(1, self.configs.epochs+1), leave = True, desc="Training...")
         for epoch in epochs:
             self.model.train()
@@ -128,6 +80,14 @@ class Trainer:
                 
             self.print_per_epoch(epoch)
             self.save_checkpoint(epoch)
+            
+    def continue_training(self, chkpt_file):
+        '''
+        continue training from checkpoint
+        '''
+        self.model, self.optimizer, _ = self.load_checkpoint(chkpt_file, self.model, self.optimizer)
+        self.schedule_cold_start()
+        self.train()
 
     def train_one_epoch(self, epoch):
         batches = tqdm(self.train_dataloader, total=len(self.train_dataloader))
@@ -225,3 +185,60 @@ class Trainer:
                 optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
         else:
             raise ValueError(f'Unkown scheduler {scheduler}')
+
+    @staticmethod
+    def load_checkpoint(chkpt_dir, model, optimizer: Optional=None):
+        chkpt = torch.load(chkpt_dir)
+        model.load_state_dict(chkpt['model_state_dict'])
+        if optimizer:
+            optimizer.load_state_dict(chkpt['optimizer_state_dict'])
+        return model, optimizer, chkpt
+    
+    def save_checkpoint(self, epoch):
+        if not self.chkpt_dir.exists():
+            self.chkpt_dir.mkdir(parents=True)
+        epoch -= 1
+        chkpt_path = self.chkpt_dir / ('chkpt' + str(epoch) + '.pt')
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'train_loss': self.train_logs[epoch][f'epoch_{epoch}']['loss'],
+            'val_loss': self.val_logs[epoch][f'epoch_{epoch}']['loss'],
+            'train_acc': self.train_logs[epoch][f'epoch_{epoch}']['accuracy'],
+            'val_acc': self.val_logs[epoch][f'epoch_{epoch}']['accuracy'],
+        }, chkpt_path)
+        
+    def schedule_cold_start(self):
+        self.scheduler = self.get_scheduler(
+            self.optimizer, 
+            self.configs.scheduler, 
+            0, 
+            len(self.train_dataloader)*self.configs.epochs)
+
+    def print_per_epoch(self, epoch):
+        print(f"\n\n{'-'*30}EPOCH {epoch}/{self.configs.epochs}{'-'*30}")
+        epoch -= 1 
+        train_loss = self.train_logs[epoch][f'epoch_{epoch}']['loss']
+        train_acc = self.train_logs[epoch][f'epoch_{epoch}']['accuracy']
+        val_loss = self.val_logs[epoch][f'epoch_{epoch}']['loss']
+        val_acc = self.val_logs[epoch][f'epoch_{epoch}']['accuracy']
+        print(f"Train -> LOSS: {train_loss} | ACCURACY: {train_acc}")
+        print(f"Validation -> LOSS: {val_loss} | ACCURACY: {val_acc}\n\n\n")
+
+    def logger(self, epoch, metrics, loss, mode):
+        log = {
+            f'epoch_{epoch-1}': {
+                'loss': loss,
+                'accuracy': metrics
+            }
+        }
+        if mode == 'train':
+            self.train_logs.append(log)
+        else:
+            self.val_logs.append(log)
+
+    def clear(self):
+        gc.collect()
+        torch.cuda.empty_cache()
+    
