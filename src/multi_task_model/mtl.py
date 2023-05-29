@@ -39,17 +39,17 @@ class AutoModelForMTL(torch.nn.Module):
         torch.save(model, dir)
 
     @staticmethod
-    def load_model(dir):
-        return torch.load(dir)
+    def load_model(dir, device=torch.device('cpu')):
+        return torch.load(dir, device)
 
 
 class MTLInference:
-    def __init__(self, tokenizer_card, model_card, num_labels=None, pretrained_model=True) -> None:
+    def __init__(self, tokenizer_card, model_card, num_labels=None, pretrained_model=True, device=torch.device('cpu')) -> None:
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_card)
         if pretrained_model:
             self.mtl_model = AutoModelForMTL(model_card, num_labels)
         else:
-            self.mtl_model = AutoModelForMTL.load_model(model_card)
+            self.mtl_model = AutoModelForMTL.load_model(model_card, device)
         self.mtl_model.eval()
 
     def encode(self, inputs):
