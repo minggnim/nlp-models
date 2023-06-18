@@ -32,7 +32,7 @@ class AutoModelForMTL(torch.nn.Module):
         return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
     def cls_pooling(self, model_output):
-        return model_output[0][:,0]
+        return model_output[0][:, 0]
     
     @staticmethod
     def save_model(model, dir):
@@ -44,6 +44,9 @@ class AutoModelForMTL(torch.nn.Module):
 
 
 class MTLInference:
+    '''
+    class for MTL model infering
+    '''
     def __init__(self, tokenizer_card, model_card, num_labels=None, pretrained_model=True, device=torch.device('cpu')) -> None:
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(tokenizer_card)
         if pretrained_model:
@@ -66,7 +69,7 @@ class MTLInference:
     def optimal_answer(self, query, cat_lookup, corpus, top_k=1):
         pred_label, query_embedding = self.predict(query)
         corpus_embeddings, question_corpus, answer_corpus = get_embedding_group(pred_label, cat_lookup, corpus)
-        sim_scores = torch.mm(query_embedding, corpus_embeddings.transpose(0,1).cpu().tolist())
+        sim_scores = torch.mm(query_embedding, corpus_embeddings.transpose(0, 1).cpu().tolist())
         top_idx = np.argpartition(sim_scores, range(-top_k, 0))[-top_k:][::-1]
         score = list(sim_scores[top_idx])
         question_matched = [question_corpus[i] for i in top_idx]
@@ -76,4 +79,3 @@ class MTLInference:
             answer_matched=answer_matched,
             score=score
         )
-    
