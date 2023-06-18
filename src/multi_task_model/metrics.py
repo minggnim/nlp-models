@@ -1,44 +1,44 @@
-import torch
 from typing import Optional, Literal
+import torch
 from torchmetrics.classification import (
     MultilabelHammingDistance,
-    BinaryHammingDistance,
+    MulticlassHammingDistance,
     MultilabelAccuracy,
-    BinaryAccuracy
+    MulticlassAccuracy
 )
 
 
 def hamming_distance(
-    outputs, 
-    targets, 
+    outputs,
+    targets,
     multi_label: bool = False, 
     num_labels: Optional[int] = None, 
-    average:Literal['micro', 'macro', 'weighted', 'none']='macro'
-    ):
+    device: torch.device = torch.device('cpu'),
+    average: Literal['micro', 'macro', 'weighted', 'none'] = 'macro'
+):
+    if not num_labels:
+        raise ValueError('num_labels is required')
     if multi_label:
-        if not num_labels:
-            raise ValueError('num_labels is required for multi_label is True')
-        else:
-            hamming_distance = MultilabelHammingDistance(num_labels, average=average)
+        hamming = MultilabelHammingDistance(num_labels, average=average)
     else:
-        hamming_distance = BinaryHammingDistance()
-    return hamming_distance(outputs, targets)
+        hamming = MulticlassHammingDistance(num_labels, average=average)
+    hamming.to(device)
+    return hamming(outputs, targets)
 
 
 def accuracy(
-    outputs, 
-    targets, 
-    multi_label: bool = False, 
-    num_labels: Optional[int] = None,
-    device = torch.device('cpu'),
+    outputs,
+    targets,
+    num_labels: int,
+    multi_label: bool = False,
+    device: torch.device = torch.device('cpu'),
     average: Literal['micro', 'macro', 'weighted', 'none'] = 'macro'
-    ):
+):
+    if not num_labels:
+        raise ValueError('num_labels is required')
     if multi_label:
-        if not num_labels:
-            raise ValueError('num_labels is required for multi_label is True')
-        else:
-            acc = MultilabelAccuracy(num_labels, average=average)
+        acc = MultilabelAccuracy(num_labels, average=average)
     else:
-        acc = BinaryAccuracy()
+        acc = MulticlassAccuracy(num_labels, average=average)
     acc.to(device)
     return acc(outputs, targets)
