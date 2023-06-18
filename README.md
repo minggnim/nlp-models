@@ -1,6 +1,7 @@
-[![Dependency Review](https://github.com/minggnim/nlp-classification-model/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/minggnim/nlp-classification-model/actions/workflows/dependency-review.yml)
+<a href="https://github.com/minggnim/nlp-models/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-success" alt="Apache 2.0 License"></a>
 [![Python package](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-package.yml/badge.svg)](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-package.yml)
 [![Upload Python Package](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-publish.yml/badge.svg)](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-publish.yml)
+[![Dependency Review](https://github.com/minggnim/nlp-classification-model/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/minggnim/nlp-classification-model/actions/workflows/dependency-review.yml)
 
 # NLP Models
 
@@ -10,13 +11,16 @@ A repository for building transformer based nlp models
 
 1. bert_classifier
    A wrapper package around BERT-based classification models
-   a. [Training example](https://github.com/minggnim/nlp-models/blob/master/notebooks/01_a_classification_model_training_example.ipynb)
-   b. [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/01_b_classification_inference_example.ipynb)
-2. multi_task_model
+   
+   - [Training example](https://github.com/minggnim/nlp-models/blob/master/notebooks/01_a_classification_model_training_example.ipynb)
+   - [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/01_b_classification_inference_example.ipynb)
+   
+3. multi_task_model
    An implementation of multi-tasking model built on encoder models
-   a. [Zero-shot multi-task model](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_a_multitask_model_zeroshot_learning.ipynb)
-   b. [Training example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_b_multitask_model_training_example.ipynb)
-   c. [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_c_multitask_model_inference_example.ipynb)
+   
+   - [Zero-shot multi-task model](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_a_multitask_model_zeroshot_learning.ipynb)
+   - [Training example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_b_multitask_model_training_example.ipynb)
+   - [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_c_multitask_model_inference_example.ipynb)
 
 ## Other Example Notebooks
 
