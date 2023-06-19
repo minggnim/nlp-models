@@ -3,14 +3,20 @@ data modules
 '''
 import torch
 from torch.utils.data import Dataset
-from .bert import bert_encoder
 
 
 class CustomDataset(Dataset):
     '''
     Class to construct torch Dataset from dataframe
     '''
-    def __init__(self, dataframe, data_field, label_field, tokenizer, max_len, multi_label):
+    def __init__(self,
+                 dataframe,
+                 data_field,
+                 label_field,
+                 tokenizer,
+                 max_len,
+                 multi_label=False
+                 ):
         self.max_len = max_len
         self.data = dataframe
         self.tokenizer = tokenizer
