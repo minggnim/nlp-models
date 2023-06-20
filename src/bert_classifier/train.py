@@ -23,12 +23,12 @@ def loss_fn(outputs, targets):
     return torch.nn.CrossEntropyLoss()(outputs, targets)
 
 
-def optimizer(model, learning_rate):
-    optimizer = torch.optim.AdamW(
+def optimizer_obj(model, learning_rate):
+    opt = torch.optim.AdamW(
         params=model.parameters(),
         lr=learning_rate
     )
-    return optimizer
+    return opt
 
 
 def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5, device='cpu'):
