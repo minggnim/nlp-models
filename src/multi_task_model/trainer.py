@@ -15,7 +15,7 @@ from .loss import cross_entropy_loss_fn
 class Configs:
     epochs: int = 1
     optimizer_class = torch.optim.AdamW
-    optimizer_params: Dict[str, float] = field(default_factory = lambda: ({"lr": 2e-5})) 
+    optimizer_params: Dict[str, float] = field(default_factory=lambda: ({"lr": 2e-5}))
     weight_decay: float = 0.01
     scheduler: str = 'WarmupLinear'
     warmup_steps: int = 10000
@@ -25,14 +25,14 @@ class Configs:
 
 
 class Trainer:
-    def __init__(self, 
+    def __init__(self,
                  model: torch.nn.Module,
                  train_dataloader: DataLoader,
                  test_dataloader: DataLoader,
                  configs: Configs,
-                 metrics = accuracy,
+                 metrics=accuracy,
                  device: torch.device = torch.device('cpu'),
-                 chkpt_dir = Path('../chkpt')
+                 chkpt_dir=Path('../chkpt')
                  ):
         self.model = model
         self.train_dataloader = train_dataloader
@@ -54,19 +54,19 @@ class Trainer:
                 param.requires_grad = False
 
         self.optimizer = self.get_optimizer(
-            list(self.model.named_parameters()), 
-            self.configs.optimizer_class, 
-            self.configs.optimizer_params, 
+            list(self.model.named_parameters()),
+            self.configs.optimizer_class,
+            self.configs.optimizer_params,
             self.configs.weight_decay)
         
         self.scheduler = self.get_scheduler(
-            self.optimizer, 
-            self.configs.scheduler, 
-            self.configs.warmup_steps, 
-            len(self.train_dataloader)*self.configs.epochs)
+            self.optimizer,
+            self.configs.scheduler,
+            self.configs.warmup_steps,
+            len(self.train_dataloader) * self.configs.epochs)
     
     def train(self):
-        epochs = tqdm(range(1, self.configs.epochs+1), leave = True, desc="Training...")
+        epochs = tqdm(range(1, self.configs.epochs + 1), leave=True, desc="Training...")
         for epoch in epochs:
             self.model.train()
             epochs.set_description(f"EPOCH {epoch} / {self.configs.epochs} | training...")
@@ -105,10 +105,12 @@ class Trainer:
 
             total_train_loss += loss.item()
             total_train_acc += self.metrics(
-                outputs[0], labels, 
-                self.configs.multi_label, 
-                self.configs.num_labels, 
-                self.device).item()
+                outputs[0],
+                labels,
+                self.configs.num_labels,
+                self.configs.multi_label,
+                self.device
+            ).item()
             
             batches.set_description(f"Train Loss Step: {loss.item():.2f}")
         
@@ -141,10 +143,12 @@ class Trainer:
         
         avg_val_loss = val_loss.mean().item()
         avg_val_acc = self.metrics(
-            val_outputs, val_targets, 
-            self.configs.multi_label, 
-            self.configs.num_labels, 
-            self.device).item()
+            val_outputs,
+            val_targets,
+            self.configs.num_labels,
+            self.configs.multi_label,
+            self.device
+        ).item()
         
         self.logger(epoch, avg_val_acc, avg_val_loss, 'test')
 
@@ -211,14 +215,14 @@ class Trainer:
         
     def schedule_cold_start(self):
         self.scheduler = self.get_scheduler(
-            self.optimizer, 
-            self.configs.scheduler, 
-            0, 
-            len(self.train_dataloader)*self.configs.epochs)
+            self.optimizer,
+            self.configs.scheduler,
+            0,
+            len(self.train_dataloader) * self.configs.epochs)
 
     def print_per_epoch(self, epoch):
         print(f"\n\n{'-'*30}EPOCH {epoch}/{self.configs.epochs}{'-'*30}")
-        epoch -= 1 
+        epoch -= 1
         train_loss = self.train_logs[epoch][f'epoch_{epoch}']['loss']
         train_acc = self.train_logs[epoch][f'epoch_{epoch}']['accuracy']
         val_loss = self.val_logs[epoch][f'epoch_{epoch}']['loss']
