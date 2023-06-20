@@ -11,8 +11,8 @@ from torchmetrics.classification import (
 def hamming_distance(
     outputs,
     targets,
-    multi_label: bool = False, 
-    num_labels: Optional[int] = None, 
+    num_labels: int,
+    multi_label: bool = False,
     device: torch.device = torch.device('cpu'),
     average: Literal['micro', 'macro', 'weighted', 'none'] = 'macro'
 ):
