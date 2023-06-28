@@ -35,12 +35,12 @@ class AutoModelForMTL(torch.nn.Module):
         return model_output[0][:, 0]
     
     @staticmethod
-    def save_model(model, dir):
-        torch.save(model, dir)
+    def save_model(model, model_dir):
+        torch.save(model, model_dir)
 
     @staticmethod
-    def load_model(dir, device=torch.device('cpu')):
-        return torch.load(dir, device)
+    def load_model(model_dir, device=torch.device('cpu')):
+        return torch.load(model_dir, device)
 
 
 class MTLInference:

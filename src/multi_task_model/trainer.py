@@ -1,10 +1,10 @@
 import gc
-import torch
-import transformers
 from pathlib import Path
 from tqdm.notebook import tqdm
 from typing import Optional, Dict
 from dataclasses import dataclass, field
+import torch
+import transformers
 from torch.utils.data import DataLoader
 from .metrics import accuracy
 from .utils import batch_to_device
@@ -19,7 +19,6 @@ class Configs:
     weight_decay: float = 0.01
     scheduler: str = 'WarmupLinear'
     warmup_steps: int = 10000
-    multi_label: bool = False
     num_labels: Optional[int] = None
     tune_base_model: bool = True
 
@@ -96,7 +95,7 @@ class Trainer:
             labels = labels.to(self.device)
             features = batch_to_device(features, self.device)
             outputs = self.model(**features)
-            loss = cross_entropy_loss_fn(outputs[0], labels, self.configs.multi_label)
+            loss = cross_entropy_loss_fn(outputs[0], labels)
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
@@ -108,16 +107,15 @@ class Trainer:
                 outputs[0],
                 labels,
                 self.configs.num_labels,
-                self.configs.multi_label,
                 self.device
             ).item()
             
             batches.set_description(f"Train Loss Step: {loss.item():.2f}")
         
         self.logger(
-            epoch, 
-            total_train_acc/len(self.train_dataloader), 
-            total_train_loss/len(self.train_dataloader),
+            epoch,
+            total_train_acc / len(self.train_dataloader),
+            total_train_loss / len(self.train_dataloader),
             'train')
 
     @torch.no_grad()
@@ -137,7 +135,7 @@ class Trainer:
             outputs = self.model(**features)
             val_outputs = torch.cat((val_outputs, outputs[0]), 0)
             val_targets = torch.cat((val_targets, labels), 0)
-            loss = cross_entropy_loss_fn(outputs[0], labels, self.configs.multi_label).reshape(1)
+            loss = cross_entropy_loss_fn(outputs[0], labels).reshape(1)
             val_loss = torch.cat((val_loss, loss), 0)
             batches.set_description(f"Validation Loss Step: {loss.item():.2f}")
         
@@ -146,7 +144,6 @@ class Trainer:
             val_outputs,
             val_targets,
             self.configs.num_labels,
-            self.configs.multi_label,
             self.device
         ).item()
         
@@ -154,7 +151,7 @@ class Trainer:
 
     @staticmethod
     def get_optimizer(param_optimizer,
-                      optimizer_class = torch.optim.AdamW,
+                      optimizer_class=torch.optim.AdamW,
                       optimizer_params: dict = {'lr': 2e-5},
                       weight_decay: float = 0.01
                       ):
@@ -191,7 +188,7 @@ class Trainer:
             raise ValueError(f'Unkown scheduler {scheduler}')
 
     @staticmethod
-    def load_checkpoint(chkpt_dir, model, optimizer: Optional=None):
+    def load_checkpoint(chkpt_dir, model, optimizer=None):
         chkpt = torch.load(chkpt_dir)
         model.load_state_dict(chkpt['model_state_dict'])
         if optimizer:
