@@ -1,10 +1,10 @@
 import gc
-import torch
-import transformers
 from pathlib import Path
 from tqdm.notebook import tqdm
 from typing import Optional, Dict
 from dataclasses import dataclass, field
+import torch
+import transformers
 from torch.utils.data import DataLoader
 from .metrics import accuracy
 from .utils import batch_to_device
@@ -113,9 +113,9 @@ class Trainer:
             batches.set_description(f"Train Loss Step: {loss.item():.2f}")
         
         self.logger(
-            epoch, 
-            total_train_acc/len(self.train_dataloader), 
-            total_train_loss/len(self.train_dataloader),
+            epoch,
+            total_train_acc / len(self.train_dataloader),
+            total_train_loss / len(self.train_dataloader),
             'train')
 
     @torch.no_grad()
@@ -151,7 +151,7 @@ class Trainer:
 
     @staticmethod
     def get_optimizer(param_optimizer,
-                      optimizer_class = torch.optim.AdamW,
+                      optimizer_class=torch.optim.AdamW,
                       optimizer_params: dict = {'lr': 2e-5},
                       weight_decay: float = 0.01
                       ):
@@ -188,7 +188,7 @@ class Trainer:
             raise ValueError(f'Unkown scheduler {scheduler}')
 
     @staticmethod
-    def load_checkpoint(chkpt_dir, model, optimizer: Optional=None):
+    def load_checkpoint(chkpt_dir, model, optimizer=None):
         chkpt = torch.load(chkpt_dir)
         model.load_state_dict(chkpt['model_state_dict'])
         if optimizer:
