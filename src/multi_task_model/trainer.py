@@ -19,7 +19,6 @@ class Configs:
     weight_decay: float = 0.01
     scheduler: str = 'WarmupLinear'
     warmup_steps: int = 10000
-    multi_label: bool = False
     num_labels: Optional[int] = None
     tune_base_model: bool = True
 
@@ -96,7 +95,7 @@ class Trainer:
             labels = labels.to(self.device)
             features = batch_to_device(features, self.device)
             outputs = self.model(**features)
-            loss = cross_entropy_loss_fn(outputs[0], labels, self.configs.multi_label)
+            loss = cross_entropy_loss_fn(outputs[0], labels)
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
@@ -108,7 +107,6 @@ class Trainer:
                 outputs[0],
                 labels,
                 self.configs.num_labels,
-                self.configs.multi_label,
                 self.device
             ).item()
             
@@ -137,7 +135,7 @@ class Trainer:
             outputs = self.model(**features)
             val_outputs = torch.cat((val_outputs, outputs[0]), 0)
             val_targets = torch.cat((val_targets, labels), 0)
-            loss = cross_entropy_loss_fn(outputs[0], labels, self.configs.multi_label).reshape(1)
+            loss = cross_entropy_loss_fn(outputs[0], labels).reshape(1)
             val_loss = torch.cat((val_loss, loss), 0)
             batches.set_description(f"Validation Loss Step: {loss.item():.2f}")
         
@@ -146,7 +144,6 @@ class Trainer:
             val_outputs,
             val_targets,
             self.configs.num_labels,
-            self.configs.multi_label,
             self.device
         ).item()
         

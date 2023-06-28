@@ -14,15 +14,13 @@ class CustomDataset(Dataset):
                  data_field,
                  label_field,
                  tokenizer,
-                 max_len,
-                 multi_label=False
+                 max_len
                  ):
         self.max_len = max_len
         self.data = dataframe
         self.tokenizer = tokenizer
         self.content = self.data[data_field]
         self.label = self.data[label_field]
-        self.multi_label = multi_label
 
     def __len__(self):
         return len(self.content)
@@ -41,10 +39,8 @@ class CustomDataset(Dataset):
             return_tensors='pt'
         )
         features = encoded_content
-        if self.multi_label:
-            labels = torch.tensor(self.label[index], dtype=torch.float)
-        else:
-            labels = torch.tensor(self.label[index], dtype=torch.long)
+        labels = torch.tensor(self.label[index], dtype=torch.float)
+        # for int ids: labels = torch.tensor(self.label[index], dtype=torch.long)
 
         return features, labels
 
@@ -55,9 +51,11 @@ def create_label_dict(dataframe, label_col):
     return label_dict
 
 
-def label2id(dataframe, label_col, label_dict, multi_label=False):
-    if multi_label:
-        dataframe[label_col] = dataframe[label_col].apply(lambda c: [int(k in c) for k in label_dict.keys()])
-    else:
-        dataframe[label_col] = dataframe[label_col].apply(lambda c: label_dict[c])
+def label_to_id_list(dataframe, label_col, label_dict):
+    dataframe[label_col] = dataframe[label_col].apply(lambda c: [int(k in c) for k in label_dict.keys()])
+    return dataframe
+
+
+def label_to_id_int(dataframe, label_col, label_dict):
+    dataframe[label_col] = dataframe[label_col].apply(lambda c: label_dict[c])
     return dataframe
