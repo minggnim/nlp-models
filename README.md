@@ -22,6 +22,7 @@ A repository for building transformer based nlp models
    - [Zero-shot multi-task model](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_a_multitask_model_zeroshot_learning.ipynb)
    - [Training example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_b_multitask_model_training_example.ipynb)
    - [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_c_multitask_model_inference_example.ipynb)
+   - [QDrant Vector DB](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_d_qdrant_vector_db.ipynb)
 
 ## Other Example Notebooks
 
