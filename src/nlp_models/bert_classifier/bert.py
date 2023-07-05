@@ -2,7 +2,7 @@
 bert inheritance class and functions
 '''
 import torch
-from .io import get_pretrained_model
+from ..base.io import get_pretrained_model
 
 
 class BertClass(torch.nn.Module):

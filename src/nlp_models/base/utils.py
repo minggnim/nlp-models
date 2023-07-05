@@ -13,7 +13,7 @@ def fullname(o):
         return o.__class__.__name__
     else:
         return module + '.' + o.__class__.__name__
-    
+
 
 def import_from_string(dotted_path):
     '''
@@ -25,7 +25,7 @@ def import_from_string(dotted_path):
     except ValueError:
         msg = f'{dotted_path} doesn\'t look like a module path'
         raise ImportError(msg)
-    
+
     try:
         module = importlib.import_module(dotted_path)
     except Exception:
@@ -36,7 +36,7 @@ def import_from_string(dotted_path):
     except AttributeError:
         msg = f'Module {module_path} does not define a {class_name} attribute/class'
         raise ImportError(msg)
-    
+
 
 def batch_to_device(batch, target_device: device):
     '''

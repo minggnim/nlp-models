@@ -1,7 +1,7 @@
 import os
 import json
-import torch
 from typing import Union
+import torch
 from .utils import fullname, import_from_string
 
 
@@ -40,10 +40,10 @@ class Dense(torch.nn.Module):
         input_features: int,
         output_features: int,
         bias: bool = True,
-        activation_function = torch.nn.Sigmoid(),
+        activation_function=torch.nn.Sigmoid(),
         init_weights: Union[torch.Tensor, None] = None,
-        init_bias: Union[torch.Tensor, None] = None 
-        ) -> None:
+        init_bias: Union[torch.Tensor, None] = None
+    ) -> None:
         super().__init__()
         self.input_features = input_features
         self.output_features = output_features

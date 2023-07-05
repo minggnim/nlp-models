@@ -1,8 +1,8 @@
 import torch
 import transformers
 import numpy as np
-from .layers import Dropout, Dense
-from .utils import get_embedding_group
+from ..base.layers import Dropout, Dense
+from ..base.utils import get_embedding_group
 
 
 class AutoModelForMTL(torch.nn.Module):
@@ -33,7 +33,7 @@ class AutoModelForMTL(torch.nn.Module):
 
     def cls_pooling(self, model_output):
         return model_output[0][:, 0]
-    
+
     @staticmethod
     def save_model(model, model_dir):
         torch.save(model, model_dir)
@@ -65,6 +65,24 @@ class MTLInference:
         pred_label = outputs[0]
         query_embedding = outputs[1]
         return pred_label, query_embedding
+
+    def pred_raw(self, query):
+        return self.predict(query)[0].squeeze().tolist()
+
+    @staticmethod
+    def pred_index(raw_pred):
+        pred = np.flatnonzero(np.array(raw_pred).__gt__(0.5)).tolist()
+        if isinstance(pred, int):
+            return [pred]
+        return pred
+
+    @staticmethod
+    def get_label(pred, label_dict):
+        return [label_dict[p] for p in pred]
+
+    def predict_label(self, query):
+        p_raw = self.pred_raw(query)
+        return self.pred_index(p_raw)
 
     def optimal_answer(self, query, cat_lookup, corpus, top_k=1):
         pred_label, query_embedding = self.predict(query)
