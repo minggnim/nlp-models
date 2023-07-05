@@ -6,9 +6,9 @@ from dataclasses import dataclass, field
 import torch
 import transformers
 from torch.utils.data import DataLoader
-from .metrics import accuracy
-from .utils import batch_to_device
-from .loss import cross_entropy_loss_fn
+from ..base.metrics import accuracy
+from ..base.utils import batch_to_device
+from ..base.loss import cross_entropy_loss_fn
 
 
 @dataclass
@@ -71,15 +71,15 @@ class Trainer:
             epochs.set_description(f"EPOCH {epoch} / {self.configs.epochs} | training...")
             self.train_one_epoch(epoch)
             self.clear()
-            
+
             self.model.eval()
             epochs.set_description(f"EPOCH {epoch} / {self.configs.epochs} | validating...")
             self.validate_one_epoch(epoch)
             self.clear()
-                
+
             self.print_per_epoch(epoch)
             self.save_checkpoint(epoch)
-            
+
     def continue_training(self, chkpt_file):
         '''
         continue training from checkpoint
@@ -188,8 +188,8 @@ class Trainer:
             raise ValueError(f'Unkown scheduler {scheduler}')
 
     @staticmethod
-    def load_checkpoint(chkpt_dir, model, optimizer=None):
-        chkpt = torch.load(chkpt_dir)
+    def load_checkpoint(chkpt_dir, model, optimizer=None, device=torch.device('cpu')):
+        chkpt = torch.load(chkpt_dir, device)
         model.load_state_dict(chkpt['model_state_dict'])
         if optimizer:
             optimizer.load_state_dict(chkpt['optimizer_state_dict'])

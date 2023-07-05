@@ -5,8 +5,9 @@ import time
 import torch
 import numpy as np
 from tqdm import tqdm
-from .io import save_checkpoint
-from .metrics import accuracy_metrics
+from ..base.io import save_checkpoint
+from ..base.utils import batch_to_device
+from ..base.metrics import accuracy_metrics
 
 
 def loss_fn_multiple_labels(outputs, targets):
@@ -42,14 +43,15 @@ def custom_trainer(model, optimizer, train_dataloader, test_dataloader, epochs=5
         print(f'Total steps: {len(train_dataloader)} || Training in progress...')
         t0 = time.time()
         total_train_loss, total_train_accuracy = 0, 0
-        for _, batch in tqdm(enumerate(train_dataloader)):
+        for _, (features, label) in tqdm(enumerate(train_dataloader)):
             # import pdb; pdb.set_trace();
             model.zero_grad(set_to_none=True)
-            ids = batch['input_ids'].squeeze(1).to(device)
-            mask = batch['attention_mask'].squeeze(1).to(device)
-            type_ids = batch['token_type_ids'].squeeze(1).to(device)
-            label = batch['label'].to(device)
-            output = model(ids, mask, type_ids)
+            features = batch_to_device(features, device)
+            # ids = batch['input_ids'].squeeze(1).to(device)
+            # mask = batch['attention_mask'].squeeze(1).to(device)
+            # type_ids = batch['token_type_ids'].squeeze(1).to(device)
+            label = label.to(device)
+            output = model(**features)
 
             loss = loss_fn(output, label)
             total_train_loss += loss.item()
@@ -88,12 +90,10 @@ def validate(model, test_dataloader, device='cpu'):
     model.eval()
     val_targets, val_outputs, val_loss = [], [], []
     with torch.no_grad():
-        for _, batch in enumerate(test_dataloader):
-            ids = batch['input_ids'].squeeze(1).to(device)
-            mask = batch['attention_mask'].squeeze(1).to(device)
-            type_ids = batch['token_type_ids'].squeeze(1).to(device)
-            label = batch['label'].to(device)
-            outputs = model(ids, mask, type_ids)
+        for _, (features, label) in enumerate(test_dataloader):
+            features = batch_to_device(features, device)
+            label = label.to(device)
+            outputs = model(**features)
             val_targets.extend(label.detach().cpu().numpy())
             val_outputs.extend(torch.sigmoid(outputs).detach().cpu().numpy())
             val_loss.extend([loss_fn(outputs, label).detach().cpu().numpy()])

@@ -3,7 +3,7 @@ Inference module
 '''
 import torch
 from .bert import bert_encoder
-from .io import get_pretrained_tokenizer
+from ..base.io import get_pretrained_tokenizer
 
 
 MAX_LEN = 512

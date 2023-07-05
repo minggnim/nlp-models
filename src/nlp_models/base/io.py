@@ -98,7 +98,7 @@ def load_model_safe(num_label):
     '''
     preferred and more flexible way to load model
     '''
-    from .bert import BertClass
+    from ..bert_classifier.bert import BertClass
     pretrained_model = get_pretrained_model(PRETRAINED_MODEL, MODEL_NAME)
     model = BertClass(pretrained_model, num_label)
     model.load_state_dict(torch.load(FINETUNED_MODEL_STATE))
