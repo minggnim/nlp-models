@@ -1,5 +1,4 @@
 models/
-openai/
 offload/
 *.DS_Store
 
