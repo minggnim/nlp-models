@@ -1,4 +1,4 @@
-models/
+models/*
 offload/
 *.DS_Store
 *.h5
