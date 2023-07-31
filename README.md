@@ -1,5 +1,5 @@
 ![PyPI - Package Version](https://img.shields.io/pypi/v/nlp-models?logo=pypi&style=flat&color=blue)
-`<a href="https://github.com/minggnim/nlp-models/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue" alt="MIT License">``</a>`
+<a href="https://github.com/minggnim/nlp-models/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue" alt="MIT License"></a>
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/nlp-models.svg)](https://pypi.python.org/pypi/nlp-models/)
 [![Python package](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-package.yml/badge.svg)](https://github.com/minggnim/nlp-classification-model/actions/workflows/python-package.yml)
 [![Dependency Review](https://github.com/minggnim/nlp-classification-model/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/minggnim/nlp-classification-model/actions/workflows/dependency-review.yml)
