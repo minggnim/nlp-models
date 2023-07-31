@@ -22,13 +22,12 @@ A repository for building transformer based nlp models
    - [Training example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_b_multitask_model_training_example.ipynb)
    - [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_c_multitask_model_inference_example.ipynb)
    - [Qqrant Vector DB](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_d_qdrant_vector_db.ipynb)
-   - [Training example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_b_multitask_model_training_example.ipynb)
-   - [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_c_multitask_model_inference_example.ipynb)
 
 ## Other Example Notebooks
 
 - [Training GPT-2 model](https://github.com/minggnim/nlp-models/blob/master/notebooks/03_gpt-2-training/gpt-2-training/03_gpt2_training.ipynb)
-- [Running Falcon 4b model](https://github.com/minggnim/nlp-models/blob/master/notebooks/04_llms/04_falcon_4b.ipynb)
+- [Running Falcon 4b model](https://github.com/minggnim/nlp-models/blob/master/notebooks/04_llms/05_falcon_4b.ipynb)
+- [Run Llama2 chat on cpu](https://github.com/minggnim/nlp-models/blob/master/notebooks/04_llms/06_llama2_langchain_gglm_inference.ipynb)
 
 ## Installation
 
