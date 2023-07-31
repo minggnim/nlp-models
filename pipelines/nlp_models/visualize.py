@@ -113,9 +113,9 @@ with st.expander("Conversation", expanded=True):
         st.success(st.session_state["generated"][i], icon="🤖")
         download_str.append(st.session_state["past"][i])
         download_str.append(st.session_state["generated"][i])
-                            
+
     download_str = '\n'.join(download_str)
-    
+
     if download_str:
         st.download_button('Download', download_str)
 
