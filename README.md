@@ -23,6 +23,12 @@ A repository for building transformer based nlp models
    - [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_c_multitask_model_inference_example.ipynb)
    - [Qqrant Vector DB](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_d_qdrant_vector_db.ipynb)
 
+## Run Llama2 Chat UI on CPU
+```
+cd pipelines/nlp_models/
+streamlit run app.py
+```
+
 ## Other Example Notebooks
 
 - [Training GPT-2 model](https://github.com/minggnim/nlp-models/blob/master/notebooks/03_gpt-2-training/gpt-2-training/03_gpt2_training.ipynb)
