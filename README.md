@@ -8,6 +8,12 @@
 
 A repository for building transformer based nlp models
 
+## Run Llama2 Chat UI on CPU
+```
+cd pipelines/nlp_models/
+streamlit run app.py
+```
+
 ## Models
 
 1. bert_classifier
@@ -22,12 +28,6 @@ A repository for building transformer based nlp models
    - [Training example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_b_multitask_model_training_example.ipynb)
    - [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_c_multitask_model_inference_example.ipynb)
    - [Qqrant Vector DB](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_d_qdrant_vector_db.ipynb)
-
-## Run Llama2 Chat UI on CPU
-```
-cd pipelines/nlp_models/
-streamlit run app.py
-```
 
 ## Other Example Notebooks
 
