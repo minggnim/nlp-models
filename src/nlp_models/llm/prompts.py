@@ -20,3 +20,21 @@ Assistant:"""
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         return self.chat_prompt
+
+
+class QAPrompt:
+    def __init__(self) -> None:
+        self.qa_template = """Use the following pieces of information to answer the user's question.
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+
+Context: {context}
+Question: {question}
+
+Only return the helpful answer below and nothing else.
+Helpful answer:
+"""
+
+        self.qa_prompt = PromptTemplate(input_variables=['context', 'question'], template=self.qa_template)
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        return self.qa_prompt

@@ -7,11 +7,10 @@ To run Llama2 chat UI on CPU
 
 
 import streamlit as st
-from langchain.llms import CTransformers
-from langchain import LLMChain
 from langchain.memory import ConversationBufferWindowMemory
 from nlp_models.llm.base import LlmConfig
-from nlp_models.llm.prompts import ChatPrompt
+from nlp_models.llm.llms import build_llm
+from nlp_models.llm.apps import ChatLlmApp
 
 
 st.set_page_config(page_title='🤖 Llama2 chatbot on CPU', layout='wide', page_icon='🤖')
@@ -83,32 +82,18 @@ st.title("🦙 Llama2 🤖 Chatbot on CPU")
 st.subheader(" Powered by 🦙 Llama2 + 🦜 LangChain + Streamlit")
 
 
-cfg = LlmConfig()
-llm = CTransformers(
-    model=cfg.MODEL_BIN_PATH,
-    model_type=cfg.MODEL_TYPE,
-    config={
-        'max_new_tokens': cfg.MAX_NEW_TOKENS,
-        'temperature': cfg.TEMPERATURE
-    }
-)
-
 if 'memory' not in st.session_state:
     st.session_state.memory = ConversationBufferWindowMemory()
 
-chat_chain = LLMChain(
-    llm=llm,
-    prompt=ChatPrompt().chat_prompt,
-    verbose=True,
-    memory=st.session_state.memory,
-)
+cfg = LlmConfig()
+llm_chat_app = ChatLlmApp(llm=build_llm(cfg), memory=st.session_state.memory)
 
 st.sidebar.button("New Chat", on_click=new_chat, type='primary')
 
 user_input = get_user_input()
 
 if user_input:
-    output = chat_chain.predict(human_input=user_input)
+    output = llm_chat_app(user_input)
     st.session_state.past.append(user_input)
     st.session_state.generated.append(output)
 
