@@ -8,10 +8,17 @@
 
 A repository for building transformer based nlp models
 
-## Run Llama2 Chat UI on CPU
+## Run Llama2 on consumer CPU
+
+### Run Chat UI on CPU
 ```
 cd pipelines/nlp_models/
 streamlit run app.py
+```
+
+### Run Chat cmd line on CPU
+```
+llm_app chat -s 'hi there'
 ```
 
 ## Models
@@ -29,11 +36,13 @@ streamlit run app.py
    - [Inference example](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_c_multitask_model_inference_example.ipynb)
    - [Qqrant Vector DB](https://github.com/minggnim/nlp-models/blob/master/notebooks/02_multi-task-model/02_d_qdrant_vector_db.ipynb)
 
-## Other Example Notebooks
-
+3. `GPT-2`
 - [Training GPT-2 model](https://github.com/minggnim/nlp-models/blob/master/notebooks/03_gpt-2-training/gpt-2-training/03_gpt2_training.ipynb)
-- [Running Falcon 4b model](https://github.com/minggnim/nlp-models/blob/master/notebooks/04_llms/05_falcon_4b.ipynb)
-- [Run Llama2 chat on cpu](https://github.com/minggnim/nlp-models/blob/master/notebooks/04_llms/06_llama2_langchain_gglm_inference.ipynb)
+4. `Falcon 7B`
+- [Running Falcon 7b model](https://github.com/minggnim/nlp-models/blob/master/notebooks/04_llms/05_falcon_7b.ipynb)
+5. Quantized Llama2 models
+- [Run Llama2 chat on CPU](https://github.com/minggnim/nlp-models/blob/master/notebooks/04_llms/06_llama2_langchain_gglm_inference.ipynb)
+- [Run Llama2 QA on a custom pdf document on CPU](https://github.com/minggnim/nlp-models/blob/master/notebooks/04_llms/07_llama2_doc_qa.ipynb)
 
 ## Installation
 
