@@ -1,4 +1,3 @@
-from typing import Any
 from langchain import LLMChain
 from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferWindowMemory
@@ -22,13 +21,13 @@ class QaLlmApp:
 
 
 class ChatLlmApp:
-    def __init__(self, llm, prompt=ChatPrompt().chat_prompt, memory=ConversationBufferWindowMemory()) -> None:
+    def __init__(self, llm, prompt=ChatPrompt().chat_prompt, memory=ConversationBufferWindowMemory(), verbose=True) -> None:
         self.llm_chat = LLMChain(
             llm=llm,
             prompt=prompt,
-            verbose=True,
+            verbose=verbose,
             memory=memory
         )
 
-    def __call__(self, inputs) -> Any:
+    def __call__(self, inputs) -> str:
         return self.llm_chat.predict(human_input=inputs)
