@@ -1,6 +1,6 @@
 models/*
 offload/
-*.DS_Store
+.DS_Store
 *.h5
 
 # Byte-compiled / optimized / DLL files
