@@ -1,5 +1,5 @@
 from langchain.vectorstores import FAISS
-from langchain.document_loaders import DirectoryLoader, PyPDFLoader, PyPDFium2Loader
+from langchain.document_loaders import DirectoryLoader, PyPDFium2Loader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import HuggingFaceEmbeddings
 from .base import LlmConfig
