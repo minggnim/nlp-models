@@ -1,0 +1,11 @@
+MODEL_BIN_PATH: '../models/Llama-2-7B-Chat-GGML/llama-2-7b-chat.ggmlv3.q8_0.bin'
+MODEL_TYPE: 'llama'
+MAX_NEW_TOKENS: 256
+TEMPERATURE: 0.01
+DATA_PATH: '../data/0_raw'
+CHUNK_SIZE: 200
+CHUNK_OVERLAP: 0
+FAISS_DB_PATH: '../vectordb'
+EMBEDDING_MODEL: 'sentence-transformers/multi-qa-mpnet-base-dot-v1'
+RETURN_SOURCE_DOCUMENTS: True
+VECTOR_COUNT: 2
