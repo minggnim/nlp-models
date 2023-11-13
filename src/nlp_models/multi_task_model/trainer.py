@@ -1,8 +1,8 @@
 import gc
 from pathlib import Path
-from tqdm.notebook import tqdm
 from typing import Optional, Dict
 from dataclasses import dataclass, field
+from tqdm.notebook import tqdm
 import wandb
 import torch
 import transformers
