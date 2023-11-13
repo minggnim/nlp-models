@@ -3,6 +3,7 @@ from pathlib import Path
 from tqdm.notebook import tqdm
 from typing import Optional, Dict
 from dataclasses import dataclass, field
+import wandb
 import torch
 import transformers
 from torch.utils.data import DataLoader
@@ -117,6 +118,10 @@ class Trainer:
             total_train_acc / len(self.train_dataloader),
             total_train_loss / len(self.train_dataloader),
             'train')
+        wandb.log({
+            'train loss': total_train_acc / len(self.train_dataloader),
+            'train acc': total_train_loss / len(self.train_dataloader),
+        })
 
     @torch.no_grad()
     def validate_one_epoch(self, epoch):
@@ -148,6 +153,10 @@ class Trainer:
         ).item()
         
         self.logger(epoch, avg_val_acc, avg_val_loss, 'test')
+        wandb.log({
+            'val loss': avg_val_loss,
+            'val acc': avg_val_acc
+        })
 
     @staticmethod
     def get_optimizer(param_optimizer,
